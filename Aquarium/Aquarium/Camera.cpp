@@ -69,21 +69,33 @@ void Camera::ProcessKeyboard(ECameraMovementType direction, float deltaTime)
     switch (direction) {
     case ECameraMovementType::FORWARD:
         position += forward * velocity;
+        if(isCameraOutside())
+            position -= forward * velocity;
         break;
     case ECameraMovementType::BACKWARD:
         position -= forward * velocity;
+        if(isCameraOutside())
+			position += forward * velocity;
         break;
     case ECameraMovementType::LEFT:
         position -= right * velocity;
+        if(isCameraOutside())
+			position += right * velocity;
         break;
     case ECameraMovementType::RIGHT:
         position += right * velocity;
+        if(isCameraOutside())
+            position -= right * velocity;
         break;
     case ECameraMovementType::UP:
         position += up * velocity;
+        if(isCameraOutside())
+			position -= up * velocity;
         break;
     case ECameraMovementType::DOWN:
         position -= up * velocity;
+        if(isCameraOutside())
+            position += up * velocity;
         break;
     }
 }
@@ -119,6 +131,19 @@ void Camera::ProcessMouseScroll(float yOffset)
         FoVy = 1.0f;
     if (FoVy >= 90.0f)
         FoVy = 90.0f;
+}
+
+bool Camera::isCameraOutside() const
+{
+    glm::vec3 cubeMin = glm::vec3(-1.0f, -1.0f, -1.0f);
+    glm::vec3 cubeMax = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    if (position.x < cubeMin.x || position.x > cubeMax.x ||
+        position.y < cubeMin.y || position.y > cubeMax.y ||
+        position.z < cubeMin.z || position.z > cubeMax.z)
+    {
+		return true;
+	}
 }
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)

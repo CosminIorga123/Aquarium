@@ -48,6 +48,7 @@ public:
     void ProcessKeyboard(ECameraMovementType direction, float deltaTime);
     void MouseControl(float xPos, float yPos);
     void ProcessMouseScroll(float yOffset);
+    bool isCameraOutside() const;
 
 private:
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
