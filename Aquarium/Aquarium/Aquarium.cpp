@@ -1,10 +1,16 @@
 // Lab8 - Shadow mapping.cpp : Defines the entry point for the console application.
 //
 
+#include <Windows.h>
+#include <locale>
+#include <codecvt>
+
+
 #include "Camera.h"
 #include "ECameraMovement.h"
 #include "Shader.h"
 
+#include <minwindef.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -12,11 +18,25 @@
 const unsigned int SCR_WIDTH = 1080;
 const unsigned int SCR_HEIGHT = 720;
 
+static std::string GetCurrentPath()
+{
+	wchar_t buffer[MAX_PATH];
+	GetCurrentDirectoryW(MAX_PATH, buffer);
+
+	std::wstring executablePath(buffer);
+	std::wstring wscurrentPath = executablePath.substr(0, executablePath.find_last_of(L"\\/"));
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string currentPath = converter.to_bytes(wscurrentPath);
+	return currentPath;
+}
+
 
 Camera* pCamera = nullptr;
 
+std::string currentPath = GetCurrentPath();
 
-unsigned int CreateTexture(const std::string& strTexturePath)
+static unsigned int CreateTexture(const std::string& strTexturePath)
 {
 	unsigned int textureId = -1;
 
@@ -69,12 +89,13 @@ bool rotatingLight = false;
 
 int main(int argc, char** argv)
 {
-	std::string strFullExeFileName = argv[0];
+	//use if you want exe path
+	/*std::string strFullExeFileName = argv[0];
 	std::string strExePath;
 	const size_t last_slash_idx = strFullExeFileName.rfind('\\');
 	if (std::string::npos != last_slash_idx) {
 		strExePath = strFullExeFileName.substr(0, last_slash_idx);
-	}
+	}*/
 
 	// glfw: initialize and configure
 	glfwInit();
@@ -83,7 +104,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// glfw window creation
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Lab8 - Maparea umbrelor", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Aquarium", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -109,12 +130,12 @@ int main(int argc, char** argv)
 
 	// build and compile shaders
 	// -------------------------
-	Shader shadowMappingShader("ShadowMapping.vs", "ShadowMapping.fs");
-	Shader shadowMappingDepthShader("ShadowMappingDepth.vs", "ShadowMappingDepth.fs");
+	Shader shadowMappingShader((currentPath + "\\Shaders" + "\\ShadowMapping.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMapping.fs").c_str());
+	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
 
 	// load textures
 	// -------------
-	unsigned int floorTexture = CreateTexture(strExePath + "\\FloorTexture.PNG");
+	unsigned int floorTexture = CreateTexture(currentPath + "\\Textures\\FloorTexture.PNG");
 
 	// configure depth map FBO
 	// -----------------------

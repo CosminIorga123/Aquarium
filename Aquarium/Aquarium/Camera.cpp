@@ -142,8 +142,9 @@ bool Camera::isCameraOutside() const
         position.y < cubeMin.y || position.y > cubeMax.y ||
         position.z < cubeMin.z || position.z > cubeMax.z)
     {
-		return true;
+		return false;
 	}
+    return true;
 }
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)

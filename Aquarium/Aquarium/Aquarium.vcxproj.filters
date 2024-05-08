@@ -26,20 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ShadowMapping.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ShadowMapping.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ShadowMappingDepth.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ShadowMappingDepth.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,5 +35,19 @@
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Shaders\ShadowMapping.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Shaders\ShadowMappingDepth.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Shaders\ShadowMappingDepth.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Shaders\ShadowMapping.fs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
