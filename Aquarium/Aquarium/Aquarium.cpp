@@ -280,13 +280,13 @@ void renderFloor()
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float planeVertices[] = {
 			// positions            // normals         // texcoords
-			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, -6.f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -6.f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-25.0f, -6.f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+			25.0f, -6.f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -6.f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, -6.f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 		// plane VAO
 		glGenVertexArrays(1, &planeVAO);
@@ -389,17 +389,17 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::FORWARD, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::BACKWARD, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::LEFT, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::RIGHT, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::UP, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::DOWN, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 	{

@@ -135,6 +135,7 @@ void Camera::ProcessMouseScroll(float yOffset)
 
 bool Camera::isCameraOutside() const
 {
+    //needs to be revised
     glm::vec3 cubeMin = glm::vec3(-1.0f, -1.0f, -1.0f);
     glm::vec3 cubeMax = glm::vec3(1.0f, 1.0f, 1.0f);
 
