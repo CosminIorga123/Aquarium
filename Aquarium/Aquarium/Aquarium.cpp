@@ -35,7 +35,7 @@ static std::string GetCurrentPath()
 Camera* pCamera = nullptr;
 
 std::string currentPath = GetCurrentPath();
-
+void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture);
 static unsigned int CreateTexture(const std::string& strTexturePath)
 {
 	unsigned int textureId = -1;
@@ -76,7 +76,7 @@ static unsigned int CreateTexture(const std::string& strTexturePath)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture);
 
 void renderScene(const Shader& shader, unsigned int floorTexture, unsigned int cubeTexture);
 void renderCube();
@@ -87,6 +87,7 @@ glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
 double deltaTime = 0.0f;	// time between current frame and last frame
 double lastFrame = 0.0f;
 bool rotatingLight = false;
+bool isDay = true;
 
 int main(int argc, char** argv)
 {
@@ -266,7 +267,7 @@ int main(int argc, char** argv)
 
 		// input
 		// -----
-		processInput(window);
+		processInput(window, faces, cubemapTexture);
 		if (rotatingLight)
 			lightPos = glm::vec3(2.0f * sin(glfwGetTime()), 15.0f, 2.0f * cos(glfwGetTime()));
 		// render
@@ -484,7 +485,7 @@ void renderCube()
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -508,6 +509,19 @@ void processInput(GLFWwindow* window)
 	{
 		rotatingLight = false;
 	}
+
+	//night and day
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && !isDay)
+	{
+		isDay = true;
+		setFaces(faces, cubemapTexture);
+	}
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && isDay)
+	{
+		isDay = false;
+		setFaces(faces, cubemapTexture);
+	}
+
 
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 		int width, height;
@@ -575,4 +589,33 @@ unsigned int loadCubemap(const std::vector<std::string>& faces)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	return textureID;
+}
+
+void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
+{
+	if (isDay)
+	{
+		faces =
+		{
+		    currentPath + "\\Textures\\SkyBox\\right.jpg",
+			currentPath + "\\Textures\\SkyBox\\left.jpg",
+			currentPath + "\\Textures\\SkyBox\\top.jpg",
+			currentPath + "\\Textures\\SkyBox\\bottom.jpg",
+			currentPath + "\\Textures\\SkyBox\\front.jpg",
+			currentPath + "\\Textures\\SkyBox\\back.jpg",
+		};
+	}
+	else
+	{
+		faces =
+		{
+		    currentPath + "\\Textures\\SkyBox\\right_night.jpg",
+		    currentPath + "\\Textures\\SkyBox\\left_night.jpg",
+		    currentPath + "\\Textures\\SkyBox\\top_night.jpg",
+		    currentPath + "\\Textures\\SkyBox\\bottom_night.jpg",
+		    currentPath + "\\Textures\\SkyBox\\front_night.jpg",
+		    currentPath + "\\Textures\\SkyBox\\back_night.jpg"
+		};
+	}
+	cubemapTexture = loadCubemap(faces);
 }
