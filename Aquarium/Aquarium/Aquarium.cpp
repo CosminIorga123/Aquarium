@@ -78,7 +78,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
-void renderScene(const Shader& shader);
+void renderScene(const Shader& shader, unsigned int floorTexture, unsigned int cubeTexture);
 void renderCube();
 void renderFloor();
 unsigned int loadCubemap(const std::vector<std::string>& faces);
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 	glewInit();
 
 	// Create camera
-	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 3.0));
+	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 10.0));
 
 	// configure global opengl state
 	// -----------------------------
@@ -137,7 +137,8 @@ int main(int argc, char** argv)
 	Shader skyBoxShader((currentPath + "\\Shaders" + "\\SkyBox.vs").c_str(), (currentPath + "\\Shaders" + "\\SkyBox.fs").c_str());
 	// load textures
 	// -------------
-	unsigned int floorTexture = CreateTexture(currentPath + "\\Textures\\FloorTexture.PNG");
+	unsigned int tableTexture = CreateTexture(currentPath + "\\Textures\\TableTexture.jpg");
+	unsigned int cubeTexture = CreateTexture(currentPath + "\\Textures\\CubeTexture.png");
 
 	// configure depth map FBO
 	// -----------------------
@@ -267,7 +268,7 @@ int main(int argc, char** argv)
 		// -----
 		processInput(window);
 		if (rotatingLight)
-			lightPos = glm::vec3(2.0f * sin(glfwGetTime()), 1.0f, 2.0f * cos(glfwGetTime()));
+			lightPos = glm::vec3(2.0f * sin(glfwGetTime()), 15.0f, 2.0f * cos(glfwGetTime()));
 		// render
 		// ------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -289,10 +290,12 @@ int main(int argc, char** argv)
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tableTexture);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		renderScene(shadowMappingDepthShader);
+		renderScene(shadowMappingDepthShader, tableTexture, cubeTexture);
 		glCullFace(GL_BACK);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -313,11 +316,11 @@ int main(int argc, char** argv)
 		shadowMappingShader.SetVec3("lightPos", lightPos);
 		shadowMappingShader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		glDisable(GL_CULL_FACE);
-		renderScene(shadowMappingShader);
+		renderScene(shadowMappingShader, tableTexture, cubeTexture);
 
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -349,12 +352,20 @@ int main(int argc, char** argv)
 
 // renders the 3D scene
 // --------------------
-void renderScene(const Shader& shader)
+void renderScene(const Shader& shader, unsigned int tableTexture, unsigned int cubeTexture)
 {
+	shader.SetInt("diffuseTexture", 0); // Assuming 1 for tableTexture (GL_TEXTURE1)
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tableTexture);
+
 	// floor
 	glm::mat4 model;
 	shader.SetMat4("model", model);
 	renderFloor();
+
+	shader.SetInt("diffuseTexture", 1); // Assuming 1 for tableTexture (GL_TEXTURE1)
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, cubeTexture);
 
 	// cube
 	model = glm::mat4();

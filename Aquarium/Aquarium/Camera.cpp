@@ -135,7 +135,6 @@ void Camera::ProcessMouseScroll(float yOffset)
 
 bool Camera::isCameraOutside() const
 {
-    //needs to be revised
     glm::vec3 cubeMin = glm::vec3(-5.8f, -5.8f, -5.8f);
     glm::vec3 cubeMax = glm::vec3(5.8f, 5.8f, 5.8f);
 
@@ -143,9 +142,9 @@ bool Camera::isCameraOutside() const
         position.y < cubeMin.y || position.y > cubeMax.y ||
         position.z < cubeMin.z || position.z > cubeMax.z)
     {
-		return true;
+		return false;
 	}
-    return false;
+    return true;
 }
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
