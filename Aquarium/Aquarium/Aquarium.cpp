@@ -1,5 +1,6 @@
-// Lab8 - Shadow mapping.cpp : Defines the entry point for the console application.
-//
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_HEADER_FILE_ONLY
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <Windows.h>
 #include <locale>
@@ -8,11 +9,10 @@
 
 #include "Camera.h"
 #include "ECameraMovement.h"
-#include "Shader.h"
+#include "Model.h"
 
+#include "stb_image.h"
 #include <minwindef.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 // settings
 const unsigned int SCR_WIDTH = 1080;
@@ -240,15 +240,15 @@ int main(int argc, char** argv)
 
 	// shader configuration
 	// --------------------
-	shadowMappingShader.Use();
-	shadowMappingShader.SetInt("diffuseTexture", 0);
-	shadowMappingShader.SetInt("shadowMap", 1);
+	shadowMappingShader.use();
+	shadowMappingShader.setInt("diffuseTexture", 0);
+	shadowMappingShader.setInt("shadowMap", 1);
 
-	cubeMapsShader.Use();
-	cubeMapsShader.SetInt("skybox", 0);
+	cubeMapsShader.use();
+	cubeMapsShader.setInt("skybox", 0);
 
-	skyBoxShader.Use();
-	skyBoxShader.SetInt("skybox", 0);
+	skyBoxShader.use();
+	skyBoxShader.setInt("skybox", 0);
 	// lighting info
 	// -------------
 
@@ -284,8 +284,8 @@ int main(int argc, char** argv)
 		lightSpaceMatrix = lightProjection * lightView;
 
 		// render scene from light's point of view
-		shadowMappingDepthShader.Use();
-		shadowMappingDepthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+		shadowMappingDepthShader.use();
+		shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -307,15 +307,15 @@ int main(int argc, char** argv)
 		// 2. render scene as normal using the generated depth/shadow map 
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shadowMappingShader.Use();
+		shadowMappingShader.use();
 		glm::mat4 projection = pCamera->GetProjectionMatrix();
 		glm::mat4 view = pCamera->GetViewMatrix();
-		shadowMappingShader.SetMat4("projection", projection);
-		shadowMappingShader.SetMat4("view", view);
+		shadowMappingShader.setMat4("projection", projection);
+		shadowMappingShader.setMat4("view", view);
 		// set light uniforms
 		shadowMappingShader.SetVec3("viewPos", pCamera->GetPosition());
 		shadowMappingShader.SetVec3("lightPos", lightPos);
-		shadowMappingShader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
 		glActiveTexture(GL_TEXTURE1);
@@ -325,10 +325,10 @@ int main(int argc, char** argv)
 
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-		skyBoxShader.Use();
+		skyBoxShader.use();
 		view = glm::mat4(glm::mat3(pCamera->GetViewMatrix())); // remove translation from the view matrix
-		skyBoxShader.SetMat4("view", view);
-		skyBoxShader.SetMat4("projection", projection);
+		skyBoxShader.setMat4("view", view);
+		skyBoxShader.setMat4("projection", projection);
 		// skybox cube
 		glBindVertexArray(skyboxVAO);
 		glActiveTexture(GL_TEXTURE0);
@@ -355,16 +355,16 @@ int main(int argc, char** argv)
 // --------------------
 void renderScene(const Shader& shader, unsigned int tableTexture, unsigned int cubeTexture)
 {
-	shader.SetInt("diffuseTexture", 0); // Assuming 1 for tableTexture (GL_TEXTURE1)
+	shader.setInt("diffuseTexture", 0); // Assuming 1 for tableTexture (GL_TEXTURE1)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tableTexture);
 
 	// floor
 	glm::mat4 model;
-	shader.SetMat4("model", model);
+	shader.setMat4("model", model);
 	renderFloor();
 
-	shader.SetInt("diffuseTexture", 1); // Assuming 1 for tableTexture (GL_TEXTURE1)
+	shader.setInt("diffuseTexture", 1); // Assuming 1 for tableTexture (GL_TEXTURE1)
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, cubeTexture);
 
@@ -372,7 +372,7 @@ void renderScene(const Shader& shader, unsigned int tableTexture, unsigned int c
 	model = glm::mat4();
 	model = glm::scale(model, glm::vec3(6.0f));
 
-	shader.SetMat4("model", model);
+	shader.setMat4("model", model);
 	renderCube();
 
 
