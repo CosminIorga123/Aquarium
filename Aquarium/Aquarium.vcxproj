@@ -72,15 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>..\Include\_externals\glm;..\Include\_externals\stb;..\Include\_externals\glfw-x64\include\GLFW;..\Include\_externals\glew-2.1.0\include;..\packages\Assimp.3.0.0\build\native\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\Include\_externals\glew-2.1.0\lib\Release\x64;..\Include\_externals\glfw-x64\lib-vc2022;..\packages\Assimp.3.0.0\build\native\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\packages\Assimp.3.0.0\build\native\lib\x64;..\Include\_externals\glew-2.1.0\lib\Release\x64;..\Include\_externals\glfw-x64\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\..\..\_externals\glew-2.1.0\include;..\..\..\_externals\glm;..\..\..\_externals\glfw-x64\include\GLFW;..\..\..\_externals\stb;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\_externals\glfw-x64\lib-vc2022;..\..\..\_externals\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\Include\_externals\glew-2.1.0\include\GL;..\Include\_externals\glfw-x64\include\GLFW;..\Include\_externals\glm;..\Include\_externals\stb;..\packages\Assimp.3.0.0\build\native\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\packages\Assimp.3.0.0\build\native\lib\x64;..\Include\_externals\glew-2.1.0\lib\Release\x64;..\Include\_externals\glfw-x64\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -178,6 +174,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="..\Shaders\SkyBox.vs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Model.fs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Model.vs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>
