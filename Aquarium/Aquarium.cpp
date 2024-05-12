@@ -136,8 +136,12 @@ int main(int argc, char** argv)
 	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
 	Shader cubeMapsShader((currentPath + "\\Shaders" + "\\CubeMaps.vs").c_str(), (currentPath + "\\Shaders" + "\\CubeMaps.fs").c_str());
 	Shader skyBoxShader((currentPath + "\\Shaders" + "\\SkyBox.vs").c_str(), (currentPath + "\\Shaders" + "\\SkyBox.fs").c_str());
-	Shader modelShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fishShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
 	Shader fish2Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader aquariumShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fish3Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fish4Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader rockShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
 
 	// load textures
 	// -------------
@@ -146,8 +150,16 @@ int main(int argc, char** argv)
 
 	std::string modelFileName = currentPath + "\\Models\\TropicalFish9\\TropicalFish09.obj";
 	std::string modelFileName2 = currentPath + "\\Models\\Fish01\\13007_Blue-Green_Reef_Chromis_v2_l3.obj";
-	Model model(modelFileName, false);
+	std::string modelFileName3 = currentPath + "\\Models\\saltwater_aquarium_v1_L1.123cdde764e6-103e-4374-98e3-c8863fc34c2c\\12987_Saltwater_Aquarium_v1_l1.obj";
+	std::string modelFileName4 = currentPath + "\\Models\\Fish02\\OBJ.obj";
+	std::string modelFileName5 = currentPath + "\\Models\\Boesemani_Rainbow_v1_L2.123cbc6a2e9e-f317-488f-abf9-8b3bcb3898c5\\12999_Boesemani_Rainbow_v1_l2.obj";
+	std::string modelFileName6 = currentPath + "\\Models\\Rock1\\Rock1.obj";
+	Model fish(modelFileName, false);
 	Model fish2(modelFileName2, false);
+	Model aquarium(modelFileName3, false);
+	Model fish3(modelFileName4, false);
+	Model fish4(modelFileName5, false);
+	Model rock(modelFileName6, false);
 
 	// configure depth map FBO
 	// -----------------------
@@ -330,25 +342,67 @@ int main(int argc, char** argv)
 		glDisable(GL_CULL_FACE);
 		renderScene(shadowMappingShader, tableTexture, cubeTexture);
 
-		modelShader.use();
+		fishShader.use();
 		fish2Shader.use();
+		aquariumShader.use();
+		fish3Shader.use();
+		fish4Shader.use();
+		rockShader.use();
 
-		modelShader.setMat4("projection", projection);
-		modelShader.setMat4("view", view);
+		fishShader.setMat4("projection", projection);
+		fishShader.setMat4("view", view);
 		fish2Shader.setMat4("projection", projection);
 		fish2Shader.setMat4("view", view);
+		aquariumShader.setMat4("projection", projection);
+		aquariumShader.setMat4("view", view);
+		fish3Shader.setMat4("projection", projection);
+		fish3Shader.setMat4("view", view);
+		fish4Shader.setMat4("projection", projection);
+		fish4Shader.setMat4("view", view);
+		rockShader.setMat4("projection", projection);
+		rockShader.setMat4("view", view);
 
+		//yellow fish
 		auto modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, -3.0f, 0.0f));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
-		modelShader.setMat4("model", modelMatrix);
-		model.Draw(modelShader);
+		fishShader.setMat4("model", modelMatrix);
+		fish.Draw(fishShader);
 
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(-200.0f, 50.0f, -200.0f));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(100.0f));
-		fish2Shader.setMat4("model", modelMatrix);
+		//blue fish
+		auto fish2Matrix = glm::mat4(1.0f);
+		fish2Matrix = glm::translate(fish2Matrix, glm::vec3(30.0f, -3.0f, 0.0f));
+		fish2Matrix = glm::rotate(fish2Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		fish2Matrix = glm::scale(fish2Matrix, glm::vec3(0.5f));
+		fish2Shader.setMat4("model", fish2Matrix);
 		fish2.Draw(fish2Shader);
+
+		auto aquariumMatrix = glm::mat4(1.0f);
+		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
+		aquariumShader.setMat4("model", aquariumMatrix);
+		aquarium.Draw(aquariumShader);
+
+		//clown fish
+		auto fish3Matrix = glm::mat4(1.0f);
+		fish3Matrix = glm::translate(fish3Matrix, glm::vec3(20.0f, -3.0f, 0.0f));
+		fish3Shader.setMat4("model", fish3Matrix);
+		fish3.Draw(fish3Shader);
+
+		//green-yellow fish
+		auto fish4Matrix = glm::mat4(1.0f);
+		fish4Matrix = glm::translate(fish4Matrix, glm::vec3(35.0f, -3.0f, 0.0f));
+		fish4Matrix=glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		fish4Matrix=glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		fish4Matrix=glm::scale(fish4Matrix, glm::vec3(0.5f));
+		fish4Shader.setMat4("model", fish4Matrix);
+		fish4.Draw(fish4Shader);
+
+		//rock - can be multiplied for decoration
+		auto rockMatrix = glm::mat4(1.0f);
+		rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
+		rockShader.setMat4("model", rockMatrix);
+		rock.Draw(rockShader);
+
 
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
