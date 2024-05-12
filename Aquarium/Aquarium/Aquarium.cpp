@@ -136,10 +136,30 @@ int main(int argc, char** argv)
 	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
 	Shader cubeMapsShader((currentPath + "\\Shaders" + "\\CubeMaps.vs").c_str(), (currentPath + "\\Shaders" + "\\CubeMaps.fs").c_str());
 	Shader skyBoxShader((currentPath + "\\Shaders" + "\\SkyBox.vs").c_str(), (currentPath + "\\Shaders" + "\\SkyBox.fs").c_str());
+	Shader fishShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fish2Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader aquariumShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fish3Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader fish4Shader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+	Shader rockShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
+
 	// load textures
 	// -------------
 	unsigned int tableTexture = CreateTexture(currentPath + "\\Textures\\TableTexture.jpg");
 	unsigned int cubeTexture = CreateTexture(currentPath + "\\Textures\\CubeTexture.png");
+
+	std::string modelFileName = currentPath + "\\Models\\TropicalFish9\\TropicalFish09.obj";
+	std::string modelFileName2 = currentPath + "\\Models\\Fish01\\13007_Blue-Green_Reef_Chromis_v2_l3.obj";
+	std::string modelFileName3 = currentPath + "\\Models\\saltwater_aquarium_v1_L1.123cdde764e6-103e-4374-98e3-c8863fc34c2c\\12987_Saltwater_Aquarium_v1_l1.obj";
+	std::string modelFileName4 = currentPath + "\\Models\\Fish02\\OBJ.obj";
+	std::string modelFileName5 = currentPath + "\\Models\\Boesemani_Rainbow_v1_L2.123cbc6a2e9e-f317-488f-abf9-8b3bcb3898c5\\12999_Boesemani_Rainbow_v1_l2.obj";
+	std::string modelFileName6 = currentPath + "\\Models\\Rock1\\Rock1.obj";
+	Model fish(modelFileName, false);
+	Model fish2(modelFileName2, false);
+	Model aquarium(modelFileName3, false);
+	Model fish3(modelFileName4, false);
+	Model fish4(modelFileName5, false);
+	Model rock(modelFileName6, false);
 
 	// configure depth map FBO
 	// -----------------------
@@ -244,9 +264,6 @@ int main(int argc, char** argv)
 	shadowMappingShader.setInt("diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
 
-	cubeMapsShader.use();
-	cubeMapsShader.setInt("skybox", 0);
-
 	skyBoxShader.use();
 	skyBoxShader.setInt("skybox", 0);
 	// lighting info
@@ -263,7 +280,6 @@ int main(int argc, char** argv)
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		// rotate the light in a circle
 
 		// input
 		// -----
@@ -323,6 +339,68 @@ int main(int argc, char** argv)
 		glDisable(GL_CULL_FACE);
 		renderScene(shadowMappingShader, tableTexture, cubeTexture);
 
+		fishShader.use();
+		fish2Shader.use();
+		aquariumShader.use();
+		fish3Shader.use();
+		fish4Shader.use();
+		rockShader.use();
+
+		fishShader.setMat4("projection", projection);
+		fishShader.setMat4("view", view);
+		fish2Shader.setMat4("projection", projection);
+		fish2Shader.setMat4("view", view);
+		aquariumShader.setMat4("projection", projection);
+		aquariumShader.setMat4("view", view);
+		fish3Shader.setMat4("projection", projection);
+		fish3Shader.setMat4("view", view);
+		fish4Shader.setMat4("projection", projection);
+		fish4Shader.setMat4("view", view);
+		rockShader.setMat4("projection", projection);
+		rockShader.setMat4("view", view);
+
+		//yellow fish
+		auto modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, -3.0f, 0.0f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
+		fishShader.setMat4("model", modelMatrix);
+		fish.Draw(fishShader);
+
+		//blue fish
+		auto fish2Matrix = glm::mat4(1.0f);
+		fish2Matrix = glm::translate(fish2Matrix, glm::vec3(30.0f, -3.0f, 0.0f));
+		fish2Matrix = glm::rotate(fish2Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		fish2Matrix = glm::scale(fish2Matrix, glm::vec3(0.5f));
+		fish2Shader.setMat4("model", fish2Matrix);
+		fish2.Draw(fish2Shader);
+
+		auto aquariumMatrix = glm::mat4(1.0f);
+		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
+		aquariumShader.setMat4("model", aquariumMatrix);
+		aquarium.Draw(aquariumShader);
+
+		//clown fish
+		auto fish3Matrix = glm::mat4(1.0f);
+		fish3Matrix = glm::translate(fish3Matrix, glm::vec3(20.0f, -3.0f, 0.0f));
+		fish3Shader.setMat4("model", fish3Matrix);
+		fish3.Draw(fish3Shader);
+
+		//green-yellow fish
+		auto fish4Matrix = glm::mat4(1.0f);
+		fish4Matrix = glm::translate(fish4Matrix, glm::vec3(35.0f, -3.0f, 0.0f));
+		fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		fish4Matrix = glm::scale(fish4Matrix, glm::vec3(0.5f));
+		fish4Shader.setMat4("model", fish4Matrix);
+		fish4.Draw(fish4Shader);
+
+		//rock - can be multiplied for decoration
+		auto rockMatrix = glm::mat4(1.0f);
+		rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
+		rockShader.setMat4("model", rockMatrix);
+		rock.Draw(rockShader);
+
+
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 		skyBoxShader.use();
@@ -336,6 +414,7 @@ int main(int argc, char** argv)
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 		glDepthFunc(GL_LESS); // set depth function back to default
+
 
 
 
@@ -355,26 +434,6 @@ int main(int argc, char** argv)
 // --------------------
 void renderScene(const Shader& shader, unsigned int tableTexture, unsigned int cubeTexture)
 {
-	shader.setInt("diffuseTexture", 0); // Assuming 1 for tableTexture (GL_TEXTURE1)
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tableTexture);
-
-	// floor
-	glm::mat4 model;
-	shader.setMat4("model", model);
-	renderFloor();
-
-	shader.setInt("diffuseTexture", 1); // Assuming 1 for tableTexture (GL_TEXTURE1)
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, cubeTexture);
-
-	// cube
-	model = glm::mat4();
-	model = glm::scale(model, glm::vec3(6.0f));
-
-	shader.setMat4("model", model);
-	renderCube();
-
 
 }
 
@@ -453,7 +512,7 @@ void renderCube()
 			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
 			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
 			1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-			
+
 			// top face
 			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
 			1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
@@ -501,14 +560,6 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 		pCamera->ProcessKeyboard(ECameraMovementType::UP, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::DOWN, (float)deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-	{
-		rotatingLight = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		rotatingLight = false;
-	}
 
 	//night and day
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && !isDay)
@@ -566,7 +617,7 @@ unsigned int loadCubemap(const std::vector<std::string>& faces)
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
+	
 	int width, height, nrComponents;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
@@ -587,7 +638,7 @@ unsigned int loadCubemap(const std::vector<std::string>& faces)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
+	stbi_set_flip_vertically_on_load(true); 
 	return textureID;
 }
 
@@ -597,7 +648,7 @@ void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
 	{
 		faces =
 		{
-		    currentPath + "\\Textures\\SkyBox\\right.jpg",
+			currentPath + "\\Textures\\SkyBox\\right.jpg",
 			currentPath + "\\Textures\\SkyBox\\left.jpg",
 			currentPath + "\\Textures\\SkyBox\\top.jpg",
 			currentPath + "\\Textures\\SkyBox\\bottom.jpg",
@@ -609,12 +660,12 @@ void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
 	{
 		faces =
 		{
-		    currentPath + "\\Textures\\SkyBox\\right_night.jpg",
-		    currentPath + "\\Textures\\SkyBox\\left_night.jpg",
-		    currentPath + "\\Textures\\SkyBox\\top_night.jpg",
-		    currentPath + "\\Textures\\SkyBox\\bottom_night.jpg",
-		    currentPath + "\\Textures\\SkyBox\\front_night.jpg",
-		    currentPath + "\\Textures\\SkyBox\\back_night.jpg"
+			currentPath + "\\Textures\\SkyBox\\right_night.jpg",
+			currentPath + "\\Textures\\SkyBox\\left_night.jpg",
+			currentPath + "\\Textures\\SkyBox\\top_night.jpg",
+			currentPath + "\\Textures\\SkyBox\\bottom_night.jpg",
+			currentPath + "\\Textures\\SkyBox\\front_night.jpg",
+			currentPath + "\\Textures\\SkyBox\\back_night.jpg"
 		};
 	}
 	cubemapTexture = loadCubemap(faces);

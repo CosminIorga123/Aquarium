@@ -169,7 +169,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
 {
     string filename = string(directory) + '\\' + path;
-
+    stbi_set_flip_vertically_on_load(false);
     unsigned int textureID;
     glGenTextures(1, &textureID);
 

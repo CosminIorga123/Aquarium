@@ -79,16 +79,18 @@ void Mesh::Draw(Shader& shader)
       // and finally bind the texture
       glBindTexture(GL_TEXTURE_2D, textures[i].id);
    }
-
    // draw mesh
    glBindVertexArray(VAO);
 
    //std::cout << "draw triangles: " << numIndexes << std::endl;
+   glEnable(GL_BLEND);
    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(numIndexes), GL_UNSIGNED_INT, 0);
    glBindVertexArray(0);
 
    // always good practice to set everything back to defaults once configured.
-   glActiveTexture(GL_TEXTURE0);
+   //glActiveTexture(GL_TEXTURE0);
+   glActiveTexture(GL_TEXTURE0); // Seteaz? unitatea de textur? activ? la GL_TEXTURE1
+   glBindTexture(GL_TEXTURE_2D, 0); // Dezactiveaz? textura de pe GL_TEXTURE1
    //std::cout << "end drawing " << std::endl;
 }
 
