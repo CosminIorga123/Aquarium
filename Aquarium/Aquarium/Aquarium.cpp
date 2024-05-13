@@ -9,7 +9,7 @@
 
 #include "Camera.h"
 #include "ECameraMovement.h"
-#include "Model.h"
+#include "Fish.h"
 
 #include "stb_image.h"
 #include <minwindef.h>
@@ -232,6 +232,8 @@ int main(int argc, char** argv)
 	// lighting info
 	// -------------
 
+	Fish* renderFish = new Fish(currentPath + "\\Models");
+	Fish* renderFish2 = new Fish(currentPath + "\\Models");
 
 	// render loop
 	// -----------
@@ -262,45 +264,47 @@ int main(int argc, char** argv)
 		usedShader.setMat4("projection", projection);
 		usedShader.setMat4("view", view);
 
-		//yellow fish
-		auto modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
-		usedShader.setMat4("model", modelMatrix);
-		fish.Draw(usedShader);
+		////yellow fish
+		//auto modelMatrix = glm::mat4(1.0f);
+		//modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
+		//modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
+		//usedShader.setMat4("model", modelMatrix);
+		//fish.Draw(usedShader);
 
-		//blue fish
-		auto fish2Matrix = glm::mat4(1.0f);
-		fish2Matrix = glm::translate(fish2Matrix, glm::vec3(30.0f, -3.0f, 0.0f));
-		fish2Matrix = glm::rotate(fish2Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		fish2Matrix = glm::scale(fish2Matrix, glm::vec3(0.5f));
-		usedShader.setMat4("model", fish2Matrix);
-		fish2.Draw(usedShader);
+		////blue fish
+		//auto fish2Matrix = glm::mat4(1.0f);
+		//fish2Matrix = glm::translate(fish2Matrix, glm::vec3(30.0f, -3.0f, 0.0f));
+		//fish2Matrix = glm::rotate(fish2Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//fish2Matrix = glm::scale(fish2Matrix, glm::vec3(0.5f));
+		//usedShader.setMat4("model", fish2Matrix);
+		//fish2.Draw(usedShader);
 
-		//clown fish
-		auto fish3Matrix = glm::mat4(1.0f);
-		fish3Matrix = glm::translate(fish3Matrix, glm::vec3(20.0f, -3.0f, 0.0f));
-		usedShader.setMat4("model", fish3Matrix);
-		fish3.Draw(usedShader);
+		////clown fish
+		//auto fish3Matrix = glm::mat4(1.0f);
+		//fish3Matrix = glm::translate(fish3Matrix, glm::vec3(20.0f, -3.0f, 0.0f));
+		//usedShader.setMat4("model", fish3Matrix);
+		//fish3.Draw(usedShader);
 
-		//green-yellow fish
-		auto fish4Matrix = glm::mat4(1.0f);
-		fish4Matrix = glm::translate(fish4Matrix, glm::vec3(35.0f, -3.0f, 0.0f));
-		fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		fish4Matrix = glm::scale(fish4Matrix, glm::vec3(0.5f));
-		usedShader.setMat4("model", fish4Matrix);
-		fish4.Draw(usedShader);
+		////green-yellow fish
+		//auto fish4Matrix = glm::mat4(1.0f);
+		//fish4Matrix = glm::translate(fish4Matrix, glm::vec3(35.0f, -3.0f, 0.0f));
+		//fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//fish4Matrix = glm::scale(fish4Matrix, glm::vec3(0.5f));
+		//usedShader.setMat4("model", fish4Matrix);
+		//fish4.Draw(usedShader);
 
-		//rock - can be multiplied for decoration
-		auto rockMatrix = glm::mat4(1.0f);
-		rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
-		usedShader.setMat4("model", rockMatrix);
-		rock.Draw(usedShader);
+		////rock - can be multiplied for decoration
+		//auto rockMatrix = glm::mat4(1.0f);
+		//rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
+		//usedShader.setMat4("model", rockMatrix);
+		//rock.Draw(usedShader);
 
+		renderFish->draw(&usedShader);
+		renderFish2->draw(&usedShader);
 
 		//aquarium
-		glEnable(GL_BLEND);
+		/*glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		auto aquariumMatrix = glm::mat4(1.0f);
 		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
@@ -308,8 +312,7 @@ int main(int argc, char** argv)
 		aquariumMatrix = glm::scale(aquariumMatrix, glm::vec3(2.f));
 		usedShader.setMat4("model", aquariumMatrix);
 		aquarium.Draw(usedShader);
-
-		glDisable(GL_BLEND);
+		glDisable(GL_BLEND);*/
 
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -335,7 +338,8 @@ int main(int argc, char** argv)
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 	delete pCamera;
-
+	delete renderFish;
+	delete renderFish2;
 	glfwTerminate();
 	return 0;
 }
