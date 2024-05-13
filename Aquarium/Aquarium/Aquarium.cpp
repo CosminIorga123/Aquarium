@@ -361,7 +361,7 @@ int main(int argc, char** argv)
 
 		//yellow fish
 		auto modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, -3.0f, 0.0f));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
 		fishShader.setMat4("model", modelMatrix);
 		fish.Draw(fishShader);
@@ -374,10 +374,7 @@ int main(int argc, char** argv)
 		fish2Shader.setMat4("model", fish2Matrix);
 		fish2.Draw(fish2Shader);
 
-		auto aquariumMatrix = glm::mat4(1.0f);
-		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
-		aquariumShader.setMat4("model", aquariumMatrix);
-		aquarium.Draw(aquariumShader);
+
 
 		//clown fish
 		auto fish3Matrix = glm::mat4(1.0f);
@@ -399,6 +396,18 @@ int main(int argc, char** argv)
 		rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
 		rockShader.setMat4("model", rockMatrix);
 		rock.Draw(rockShader);
+
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//aquarium
+		auto aquariumMatrix = glm::mat4(1.0f);
+		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
+		aquariumMatrix = glm::rotate(aquariumMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		aquariumMatrix = glm::scale(aquariumMatrix, glm::vec3(2.f));
+		aquariumShader.setMat4("model", aquariumMatrix);
+		aquarium.Draw(aquariumShader);
+
 
 
 		// draw skybox as last
