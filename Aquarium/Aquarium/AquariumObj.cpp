@@ -2,11 +2,11 @@
 
 AquariumObj::AquariumObj(std::string&& modelsPath)
 {
-	object = new Model(modelsPath+"\\saltwater_aquarium_v1_L1.123cdde764e6-103e-4374-98e3-c8863fc34c2c\\12987_Saltwater_Aquarium_v1_l1.obj"
+	object = new Model(modelsPath+"\\Aquarium\\Fishtank.obj"
 		, false);
 	x = 0.0f; y = 0.0f; z = 0.0f;
-	rx = -90.0f; ry = 0.0f; rz = 0.0f;
-	float scale = 1.0f;
+	rx = 0.0f; ry = 0.0f; rz = 0.0f;
+	float scale = 5.0f;
 	sx = scale;  sy = scale; sz = scale;
 }
 
