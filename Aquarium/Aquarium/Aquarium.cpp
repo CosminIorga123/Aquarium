@@ -14,6 +14,14 @@
 #include "stb_image.h"
 #include <minwindef.h>
 #include "AquariumObj.h"
+#include <map>
+
+enum class WindowType {
+    NONE,
+    SQUARE,
+    RECTANGULAR,
+    CEILING
+};
 
 // settings
 const unsigned int SCR_WIDTH = 1080;
@@ -79,9 +87,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture);
 
+int main(int argc, char** argv);
+
 void renderScene(Shader& shader);
 void renderCube();
 void renderFloor();
+void drawSquare();
+void drawRectangular();
+void drawCeiling();
 unsigned int loadCubemap(const std::vector<std::string>& faces);
 glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
 // timing
@@ -129,14 +142,16 @@ int main(int argc, char** argv)
 
 	// configure global opengl state
 	// -----------------------------
-	glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// build and compile shaders
 	// -------------------------
 	Shader skyBoxShader((currentPath + "\\Shaders" + "\\SkyBox.vs").c_str(), (currentPath + "\\Shaders" + "\\SkyBox.fs").c_str());
 	Shader usedShader((currentPath + "\\Shaders" + "\\Model.vs").c_str(), (currentPath + "\\Shaders" + "\\Model.fs").c_str());
 	Shader shadowMappingShader((currentPath + "\\Shaders" + "\\ShadowMapping.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMapping.fs").c_str());
 	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
+	Shader windowShader((currentPath + "\\Shaders" + "\\Blending.vs").c_str(), (currentPath + "\\Shaders" + "\\Blending.fs").c_str());
 
 	// load textures
 	// -------------
@@ -264,104 +279,174 @@ int main(int argc, char** argv)
 
 	glEnable(GL_CULL_FACE);
 
+    std::vector<std::pair<glm::vec3, WindowType>> transparentObjects;
+    const float aquariumLength = 20.0f;
+    const float aquariumHeight = 5.0f;
+    const float aquariumWidth = 6.0f;
+
+
+    //front and back walls
+    for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
+        for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
+            transparentObjects.emplace_back(std::make_pair(glm::vec3(i, j, -0.0001f),WindowType::RECTANGULAR));
+            transparentObjects.emplace_back(std::make_pair(glm::vec3(i, j, aquariumWidth), WindowType::RECTANGULAR));
+        }
+    }
+    //left and right walls
+    for (float i = 0.0f; i < aquariumWidth; i += 1.0f) {
+        for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
+            transparentObjects.emplace_back(std::make_pair(glm::vec3(-0.0001f, j, i), WindowType::SQUARE));
+            transparentObjects.emplace_back(std::make_pair(glm::vec3(aquariumLength, j, i), WindowType::SQUARE));
+        }
+    }
+    //ceiling
+    for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
+        for (float j = 0.0f; j < aquariumWidth; j += 1.0f) {
+            transparentObjects.emplace_back(std::make_pair(glm::vec3(i, aquariumHeight - 1.5f, j), WindowType::CEILING));
+        }
+    }
+
+
+
 	//yellow fish
 	Fish fish(currentPath + "\\Models");
 	// render loop
 	// -----------
-	while (!glfwWindowShouldClose(window))
-	{
-		// per-frame time logic
-		// --------------------
-		float currentFrame = (float)glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+    while (!glfwWindowShouldClose(window))
+    {
+        // per-frame time logic
+        // --------------------
+        float currentFrame = (float)glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-		// input
-		// -----
-		processInput(window, faces, cubemapTexture);
+        // input
+        // -----
+        processInput(window, faces, cubemapTexture);
 
-		// reset background color
-		// ------
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// render
-		// ------
-		// 1. render depth of scene to texture (from light's perspective)
-		glm::mat4 lightProjection, lightView;
-		glm::mat4 lightSpaceMatrix;
-		float near_plane = 1.0f, far_plane = 20.5f;
-		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-
-		lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
-		lightSpaceMatrix = lightProjection * lightView;
-
-		// render scene from light's point of view
-		shadowMappingDepthShader.use();
-		shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		renderScene(shadowMappingDepthShader);
-
-		auto modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
-		shadowMappingDepthShader.setMat4("model", modelMatrix);
-		fish.draw(&shadowMappingDepthShader);
-
-		glCullFace(GL_BACK);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// reset viewport
-		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// render the scene
-		// 2. render scene as normal using the generated depth/shadow map 
-
-		shadowMappingShader.use();
-		glm::mat4 projection = pCamera->GetProjectionMatrix();
-		glm::mat4 view = pCamera->GetViewMatrix();
-		shadowMappingShader.setMat4("projection", projection);
-		shadowMappingShader.setMat4("view", view);
-		// set light uniforms
-		shadowMappingShader.SetVec3("viewPos", pCamera->GetPosition());
-		shadowMappingShader.SetVec3("lightPos", lightPos);
-		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		glDisable(GL_CULL_FACE);
-		renderScene(shadowMappingShader);
-
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
-		shadowMappingShader.setMat4("model", modelMatrix);
-		fish.draw(&shadowMappingShader);
-
-		// draw skybox as last
-		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-		skyBoxShader.use();
-		view = glm::mat4(glm::mat3(pCamera->GetViewMatrix())); // remove translation from the view matrix
-		skyBoxShader.setMat4("view", view);
-		skyBoxShader.setMat4("projection", projection);
-		// skybox cube
-		glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		glDepthFunc(GL_LESS); // set depth function back to default
+        // reset background color
+        // ------
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+        //sort transparent objects
+        std::multimap<float, std::pair<glm::vec3, WindowType>> sortedMap;
+        for (int i = 0; i < transparentObjects.size(); i++) {
+            float distance = glm::length(pCamera->GetPosition() - transparentObjects[i].first);
+            sortedMap.emplace(std::make_pair(distance, (transparentObjects[i])));
+        }
+
+
+        // render
+        // ------
+        // 1. render depth of scene to texture (from light's perspective)
+        glm::mat4 lightProjection, lightView;
+        glm::mat4 lightSpaceMatrix;
+        float near_plane = 1.0f, far_plane = 20.5f;
+        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+        lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
+        lightSpaceMatrix = lightProjection * lightView;
+
+        // render scene from light's point of view
+        shadowMappingDepthShader.use();
+        shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        renderScene(shadowMappingDepthShader);
+
+        auto modelMatrix = glm::mat4(1.0f);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
+        shadowMappingDepthShader.setMat4("model", modelMatrix);
+        fish.draw(&shadowMappingDepthShader);
+
+        glCullFace(GL_BACK);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // reset viewport
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // render the scene
+        // 2. render scene as normal using the generated depth/shadow map 
+
+        shadowMappingShader.use();
+        glm::mat4 projection = pCamera->GetProjectionMatrix();
+        glm::mat4 view = pCamera->GetViewMatrix();
+        shadowMappingShader.setMat4("projection", projection);
+        shadowMappingShader.setMat4("view", view);
+        // set light uniforms
+        shadowMappingShader.SetVec3("viewPos", pCamera->GetPosition());
+        shadowMappingShader.SetVec3("lightPos", lightPos);
+        shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glDisable(GL_CULL_FACE);
+        renderScene(shadowMappingShader);
+
+        modelMatrix = glm::mat4(1.0f);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
+        shadowMappingShader.setMat4("model", modelMatrix);
+        fish.draw(&shadowMappingShader);
+        {
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        skyBoxShader.use();
+        view = glm::mat4(glm::mat3(pCamera->GetViewMatrix())); // remove translation from the view matrix
+        skyBoxShader.setMat4("view", view);
+        skyBoxShader.setMat4("projection", projection);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
+    }
+        windowShader.use();
+        projection = pCamera->GetProjectionMatrix();
+        view = pCamera->GetViewMatrix();
+        windowShader.setMat4("projection", projection);
+        windowShader.setMat4("view", view);
+
+        //furthest object is drawn first
+        for (auto it = sortedMap.rbegin(); it != sortedMap.rend(); ++it)
+        {
+                glm::mat4 model = glm::mat4(1.0f);
+                glm::vec4 color(0.133f, 0.424f, 1.0f, 0.2f); //default aquarium color
+                model = glm::translate(model, it->second.first);
+                //bootom layer = brown
+                if (it->second.first.y== 0)
+                    color = glm::vec4(0.078f, 0.031f, 0.008f, 1.0f);
+                //top layer light gray
+                if (it->second.first.y == aquariumHeight - 1.0f)
+                    color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
+
+                windowShader.setMat4("model", model);
+                windowShader.SetVec4("color", color);
+                switch (it->second.second) {
+                case WindowType::SQUARE:
+                    drawSquare();
+                    break;
+                case WindowType::RECTANGULAR:
+                    drawRectangular();
+                    break;
+                case WindowType::CEILING:
+                    drawCeiling();
+                    break;
+                }
+        }
 
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -490,6 +575,104 @@ void renderCube()
 	glDrawArrays(GL_TRIANGLES, 0, 30);
 	glBindVertexArray(0);
 }
+
+unsigned int transparentRectVAO = 0;
+unsigned int transparentRectVBO = 0;
+void drawRectangular() {
+	if (transparentRectVAO == 0) {
+		float transparentVertices[] = {
+			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+			0.0f,  0.5f,  0.0f,
+			0.0f, -0.5f,  0.0f,
+			1.0f, -0.5f,  0.0f,
+
+			0.0f,  0.5f,  0.0f,
+			1.0f, -0.5f,  0.0f,
+			1.0f,  0.5f,  0.0f
+		};
+
+		glGenVertexArrays(1, &transparentRectVAO);
+		glGenBuffers(1, &transparentRectVBO);
+		glBindVertexArray(transparentRectVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, transparentRectVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		/*glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
+		glBindVertexArray(0);
+	}
+	//draw aquarium
+	glBindVertexArray(transparentRectVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+unsigned int transparentSquareVAO = 0;
+unsigned int transparentSquareRectVBO = 0;
+void drawSquare() {
+    if (transparentSquareVAO == 0) {
+        float transparentVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f,  0.5f,  0.0f,
+            0.0f, -0.5f,  0.0f,
+            0.0f, -0.5f,  1.0f,
+
+            0.0f,  0.5f,  0.0f,
+            0.0f, -0.5f,  1.0f,
+            0.0f,  0.5f,  1.0f
+        };
+
+        glGenVertexArrays(1, &transparentSquareVAO);
+        glGenBuffers(1, &transparentSquareRectVBO);
+        glBindVertexArray(transparentSquareVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, transparentSquareRectVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        /*glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
+        glBindVertexArray(0);
+    }
+    //draw aquarium
+    glBindVertexArray(transparentSquareVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+unsigned int transparentCeilingVAO = 0;
+unsigned int transparentCeilingVBO = 0;
+void drawCeiling() {
+    if (transparentCeilingVAO == 0) {
+        float transparentVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f, 0.0f,  0.0f,
+            1.0f, 0.0f,  0.0f,
+            1.0f, 0.0f, 1.0f,
+
+            0.0f, 0.0f,  0.0f,
+            1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f
+        };
+        glGenVertexArrays(1, &transparentCeilingVAO);
+        glGenBuffers(1, &transparentCeilingVBO);
+        glBindVertexArray(transparentCeilingVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, transparentCeilingVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        /*glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
+        glBindVertexArray(0);
+    }
+    //draw aquarium
+    glBindVertexArray(transparentCeilingVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+
+
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture)

@@ -144,7 +144,8 @@ bool Camera::isCameraOutside() const
     {
 		return false;
 	}
-    return true;
+    
+    return false;
 }
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
