@@ -13,6 +13,7 @@
 
 #include "stb_image.h"
 #include <minwindef.h>
+#include "AquariumObj.h"
 
 // settings
 const unsigned int SCR_WIDTH = 1080;
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
 
 	Model fish(modelFileName, false);
 	Model fish2(modelFileName2, false);
-	Model aquarium(modelFileName3, false);
+	//Model aquarium(modelFileName3, false);
 	Model fish3(modelFileName4, false);
 	Model fish4(modelFileName5, false);
 	Model rock(modelFileName6, false);
@@ -233,6 +234,7 @@ int main(int argc, char** argv)
 	// -------------
 
 	Fish* renderFish = new Fish(currentPath + "\\Models");
+	AquariumObj* renderAquarium = new AquariumObj(currentPath + "\\Models");
 	Fish* renderFish2 = new Fish(currentPath + "\\Models");
 
 	// render loop
@@ -304,15 +306,10 @@ int main(int argc, char** argv)
 		renderFish2->draw(&usedShader);
 
 		//aquarium
-		/*glEnable(GL_BLEND);
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		auto aquariumMatrix = glm::mat4(1.0f);
-		aquariumMatrix = glm::translate(aquariumMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
-		aquariumMatrix = glm::rotate(aquariumMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		aquariumMatrix = glm::scale(aquariumMatrix, glm::vec3(2.f));
-		usedShader.setMat4("model", aquariumMatrix);
-		aquarium.Draw(usedShader);
-		glDisable(GL_BLEND);*/
+		renderAquarium->draw(&usedShader);
+		glDisable(GL_BLEND);
 
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
