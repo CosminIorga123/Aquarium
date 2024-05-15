@@ -105,7 +105,9 @@ bool isDay = true;
 Model* fishObjModel;
 Model* fishObjModel2;
 Model* fishMan;
+Model* rock;
 
+glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
 int main(int argc, char** argv)
 {
@@ -287,7 +289,6 @@ int main(int argc, char** argv)
 
 	// lighting info
 	// -------------
-	glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
     //glm::vec3 lightPos(8.0f, 2.0f, 2.5f);
     
 	glEnable(GL_CULL_FACE);
@@ -331,6 +332,8 @@ int main(int argc, char** argv)
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
     fishMan->setPos(glm::vec3(6.0f, 0.f, 3.0f), glm::vec3(6.0f, 0.f, 3.0f), 0.0f);
 
+    rock=new Model{ currentPath + "\\Models\\Rock1\\Rock1.obj", false };
+    rock->setPos(glm::vec3(10.0f, -0.2f, 3.0f), glm::vec3(10.0f, -0.2f, 3.0f), 0.0f);
 
 	// render loop
 	// -----------
@@ -363,11 +366,15 @@ int main(int argc, char** argv)
         // render
         // ------
         // 1. render depth of scene to texture (from light's perspective)
-        if (true)
+        if (isDay)
         {
-            static float fRadius = 2.0f;
-            lightPos.x = fRadius * std::sin(currentFrame);
-            lightPos.z = fRadius * std::cos(currentFrame);
+            static float fRadius = 15.0f;
+            lightPos.x = fRadius * std::cos(currentFrame);
+            lightPos.y= 3.0f;
+        }
+        else
+        {
+            lightPos.y = -1000.0f;
         }
 
 
@@ -522,6 +529,14 @@ void renderScene(Shader& shader)
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     fishMan->Draw(shader);
+
+    model=glm::mat4(1.0f);
+    rock->moveObject(incrementMoveSpeed, incrementRotationSpeed);
+    model=glm::translate(glm::mat4(1.0f), rock->currentPos);
+    model=glm::scale(model, glm::vec3(0.3f));
+    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    rock->Draw(shader);
 }
 
 unsigned int planeVAO = 0;
@@ -759,6 +774,7 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 	{
 		isDay = false;
 		setFaces(faces, cubemapTexture);
+        lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 
 
