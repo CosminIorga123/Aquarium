@@ -6,19 +6,53 @@ Model::Model(string const& path, bool bSmoothNormals, bool gamma) : gammaCorrect
     loadModel(path, bSmoothNormals);
 }
 
+void Model::setPos(glm::vec3 startPos, glm::vec3 targetPos, float rotation)
+{
+    this->rotation = rotation;
+    this->startPos = startPos;
+    this->targetPos = targetPos;
+    currentPos = startPos;
+}
+
 void Model::Draw(Shader& shader)
 {
-    /*for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);*/
-    for (int i = meshes.size() - 1; i >= 0; i--)
+    for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
+}
+
+bool Model::moveObject(float moveIncrement, float rotateIncrement) {
+    if (glm::distance(currentPos, targetPos) <= moveIncrement) {
+
+        if (rotate180(rotateIncrement)) {
+            currentPos = targetPos;
+            std::swap(startPos, targetPos);
+        }
+        return true; // Return true when position is approximately equal to target
+    }
+    glm::vec3 direction = glm::normalize(targetPos - currentPos);
+    currentPos += direction * moveIncrement;
+    // Check if position is approximately equal to the target within a given error margin
+    return false; // Return false if position is not yet equal to target
+}
+
+bool Model::rotate180(float rotateIncrement)
+{
+    if (currentRotationIncrement >= 180.0f) {
+        currentRotationIncrement = 0.0f;
+        rotation = std::floor(rotation);
+        rotation = std::fmod(rotation, 360.0f);
+        return true;
+    }
+    currentRotationIncrement += rotateIncrement;
+    rotation += rotateIncrement;
+    return false;
 }
 
 void Model::loadModel(string const& path, bool bSmoothNormals)
 {
     // read file via ASSIMP
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | (bSmoothNormals ? aiProcess_GenSmoothNormals : aiProcess_GenNormals) | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | (bSmoothNormals ? aiProcess_GenSmoothNormals : aiProcess_GenNormals) | aiProcess_CalcTangentSpace);
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
     {
@@ -76,7 +110,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             vertex.Normal = vector;
         }
         else {
-           int j = 0;
+            int j = 0;
         }
         // texture coordinates
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -127,10 +161,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
+    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height");
+    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
@@ -170,8 +204,9 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 
 unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
 {
-    string filename = string(directory) + '\\' + path;
-    stbi_set_flip_vertically_on_load(false);
+    string filename = string(path);
+    filename = directory + '\\' + filename;
+
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
@@ -187,21 +222,25 @@ unsigned int TextureFromFile(const char* path, const string& directory, bool gam
         else if (nrComponents == 4)
             format = GL_RGBA;
 
+        glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        // set the texture wrapping parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+        stbi_image_free(data);
     }
     else
     {
         std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
     }
-    stbi_image_free(data);
 
     return textureID;
 }

@@ -7,7 +7,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-
 unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
 
 class Model
@@ -18,14 +17,28 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
+    glm::vec3 startPos;
+    glm::vec3 targetPos;
+    glm::vec3 currentPos;
+    float rotation;
 
     // constructor, expects a filepath to a 3D model.
     Model(string const& path, bool bSmoothNormals, bool gamma = false);
 
+    Model() = default;
+
+    void setPos(glm::vec3 startPos, glm::vec3 targetPos, float rotation);
+
     // draws the model, and thus all its meshes
     void Draw(Shader& shader);
 
+    bool moveObject(float moveIncrement, float rotateIncrement);
+
 private:
+
+    float currentRotationIncrement = 0.0f;
+    bool rotate180(float rotateIncrement);
+
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const& path, bool bSmoothNormals);
 
@@ -38,4 +51,3 @@ private:
     // the required info is returned as a Texture struct.
     vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 };
-

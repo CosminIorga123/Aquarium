@@ -5,10 +5,10 @@
 extern std::mt19937 gen;
 
 //random values, need to be updated
-const float MAX_X = 9.0f;
+const float MAX_X = 20.0f;
 const float MAX_Y = 5.0f;
-const float MAX_Z = 5.5f;
-const float MIN_Y = 1.3f;
+const float MAX_Z = 6.f;
+const float MIN_Y = 1.f;
 
 class RenderableObject
 {
