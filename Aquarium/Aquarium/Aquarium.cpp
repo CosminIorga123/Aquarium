@@ -11,6 +11,7 @@
 #include "ECameraMovement.h"
 #include "Fish.h"
 
+#include <irrKlang.h>
 #include "stb_image.h"
 #include <minwindef.h>
 #include "AquariumObj.h"
@@ -22,6 +23,7 @@ enum class WindowType {
     RECTANGULAR,
     CEILING
 };
+
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -102,6 +104,7 @@ double deltaTime = 0.0f;	// time between current frame and last frame
 double lastFrame = 0.0f;
 bool rotatingLight = false;
 bool isDay = true;
+irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 Model* fishObjModel;
 Model* fishObjModel2;
 Model* fishMan;
@@ -145,6 +148,7 @@ int main(int argc, char** argv)
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glewInit();
+    
 
 	// Create camera
 	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 10.0));
@@ -330,7 +334,7 @@ int main(int argc, char** argv)
     fishObjModel->setPos(glm::vec3(2.0f, 1.0f, 3.3f), glm::vec3(12.0f, 2.0f, 2.0f), 180.0f);
 
     fishObjModel2 = new Model{ currentPath + "\\Models\\Fish02\\Fish02.obj", false };
-    fishObjModel2->setPos(glm::vec3(22.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
+    fishObjModel2->setPos(glm::vec3(20.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
 
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
     fishMan->setPos(glm::vec3(2.0f, 0.f, 3.0f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
@@ -341,6 +345,9 @@ int main(int argc, char** argv)
     seaObjects = new Model{ currentPath + "\\Models\\SeaObjects\\model.obj", false };
     seaObjects->setPos(glm::vec3(10.0f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
+
+    // Play background sound
+    SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
 
 	// render loop
 	// -----------
