@@ -349,13 +349,13 @@ int main(int argc, char** argv)
     fishObjModel2->setPos(glm::vec3(20.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
 
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
-    fishMan->setPos(glm::vec3(19.25f, 0.f, 3.5f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
+    fishMan->setPos(glm::vec3(19.25f, 0.f, 4.f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
 
     rock=new Model{ currentPath + "\\Models\\Rock1\\Rock1.obj", false };
     rock->setPos(glm::vec3(16.0f, -0.2f, 4.f), glm::vec3(17.0f, -0.2f, 3.0f), 0.0f);
 
     seaObjects = new Model{ currentPath + "\\Models\\SeaObjects\\model.obj", false };
-    seaObjects->setPos(glm::vec3(10.5f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
+    seaObjects->setPos(glm::vec3(11.f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
     krab = new Model{ currentPath + "\\Models\\Krab\\model.obj", false };
     krab->setPos(glm::vec3(0.5f, 0.f, 5.5f), glm::vec3(19.5f, 0.f, 5.5f), 180.0f);
@@ -370,7 +370,7 @@ int main(int argc, char** argv)
     wall->setPos(glm::vec3(1.75f, 0.f, 3.0f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     greek = new Model{ currentPath + "\\Models\\Statue\\model.obj", false };
-    greek->setPos(glm::vec3(3.7f, -0.5f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
+    greek->setPos(glm::vec3(3.7f, -0.2f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -585,7 +585,7 @@ void renderScene(Shader& shader)
 
     model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), seaObjects->currentPos);
-    model = glm::scale(model, glm::vec3(0.006f));
+    model = glm::scale(model, glm::vec3(0.0065f));
     model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     // model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
