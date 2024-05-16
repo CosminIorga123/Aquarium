@@ -115,6 +115,8 @@ Model* seaObjects;
 Model* krab;
 Model* bubble;
 Model* statue;
+Model* wall;
+Model* greek;
 
 glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
@@ -347,7 +349,7 @@ int main(int argc, char** argv)
     fishObjModel2->setPos(glm::vec3(20.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
 
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
-    fishMan->setPos(glm::vec3(2.0f, 0.f, 3.0f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
+    fishMan->setPos(glm::vec3(19.25f, 0.f, 3.5f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
 
     rock=new Model{ currentPath + "\\Models\\Rock1\\Rock1.obj", false };
     rock->setPos(glm::vec3(16.0f, -0.2f, 4.f), glm::vec3(17.0f, -0.2f, 3.0f), 0.0f);
@@ -363,6 +365,12 @@ int main(int argc, char** argv)
 
     statue = new Model{ currentPath + "\\Models\\Ship\\model.obj", false };
     statue->setPos(glm::vec3(17.5f, 0.f, 2.2f), glm::vec3(19.5f, 0.f, 5.5f), 0.0f);
+
+    wall = new Model{ currentPath + "\\Models\\Wall\\model.obj", false };
+    wall->setPos(glm::vec3(1.75f, 0.f, 3.0f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
+
+    greek = new Model{ currentPath + "\\Models\\Statue\\model.obj", false };
+    greek->setPos(glm::vec3(3.7f, -0.5f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -560,10 +568,9 @@ void renderScene(Shader& shader)
     fishObjModel2->Draw(shader);
 
     model = glm::mat4(1.0f);
-    fishMan->moveObject(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishMan->currentPos);
-    model = glm::scale(model, glm::vec3(0.1f));
-    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.15f));
+//    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     fishMan->Draw(shader);
@@ -601,6 +608,22 @@ void renderScene(Shader& shader)
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     statue->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(glm::mat4(1.0f), wall->currentPos);
+    model = glm::scale(model, glm::vec3(0.002f));
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    shader.setMat4("model", model);
+    wall->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(glm::mat4(1.0f), greek->currentPos);
+    model = glm::scale(model, glm::vec3(0.07f));
+    //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    shader.setMat4("model", model);
+    greek->Draw(shader);
 
     // nu are textura?
     model = glm::mat4(1.0f);
