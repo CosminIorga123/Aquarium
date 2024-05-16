@@ -21,7 +21,8 @@ enum class WindowType {
     NONE,
     SQUARE,
     RECTANGULAR,
-    CEILING
+    CEILING,
+    BUBBLE
 };
 
 
@@ -97,6 +98,7 @@ void renderFloor();
 void drawSquare();
 void drawRectangular();
 void drawCeiling();
+//void drawBubbles();
 unsigned int loadCubemap(const std::vector<std::string>& faces);
 
 // timing
@@ -111,6 +113,7 @@ Model* fishMan;
 Model* rock;
 Model* seaObjects;
 Model* krab;
+Model* bubble;
 
 glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
@@ -167,6 +170,7 @@ int main(int argc, char** argv)
 	Shader shadowMappingShader((currentPath + "\\Shaders" + "\\ShadowMapping.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMapping.fs").c_str());
 	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
 	Shader windowShader((currentPath + "\\Shaders" + "\\Blending.vs").c_str(), (currentPath + "\\Shaders" + "\\Blending.fs").c_str());
+    //Shader bubbleShader((currentPath + "\\Shaders" + "\\Blending.vs").c_str(), (currentPath + "\\Shaders" + "\\Blending.fs").c_str());
 
 	// load textures
 	// -------------
@@ -290,6 +294,10 @@ int main(int argc, char** argv)
 	skyBoxShader.use();
 	skyBoxShader.setInt("skybox", 0);
 
+    /*bubbleShader.use();
+    bubbleShader.setInt("bubbleTexture", 0);
+    bubbleShader.setBool("blending", true);*/
+
 	shadowMappingShader.use();
 	shadowMappingShader.setInt("diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
@@ -348,6 +356,9 @@ int main(int argc, char** argv)
 
     krab = new Model{ currentPath + "\\Models\\Krab\\model.obj", false };
     krab->setPos(glm::vec3(0.5f, 0.f, 5.5f), glm::vec3(19.5f, 0.f, 5.5f), 180.0f);
+
+    bubble = new Model{ currentPath + "\\Models\\Bubble\\Bubble.obj", false };
+    bubble->setPos(glm::vec3(10.0f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -467,6 +478,9 @@ int main(int argc, char** argv)
         model = glm::scale(model, glm::vec3(0.03f));
         windowShader.setMat4("model", model);
         windowShader.SetVec4("color", glm::vec4(1, 1, 1, 1));
+        /*bubbleShader.use();
+        bubbleShader.setMat4("projection", projection);
+        bubbleShader.setMat4("view", view);*/
         renderCube();
 
         //furthest object is drawn first
@@ -493,6 +507,9 @@ int main(int argc, char** argv)
                     break;
                 case WindowType::CEILING:
                     drawCeiling();
+                    break;
+                case WindowType::BUBBLE:
+                    //drawBubbles(); ??
                     break;
                 }
         }
@@ -573,6 +590,14 @@ void renderScene(Shader& shader)
     model = glm::rotate(model, glm::radians(krab->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     krab->Draw(shader);
+
+    // nu are textura?
+    model = glm::mat4(1.0f);
+    model = glm::translate(glm::mat4(1.0f), bubble->currentPos);
+    model = glm::scale(model, glm::vec3(100.0f));
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    bubble->Draw(shader);
 }
 
 unsigned int planeVAO = 0;
