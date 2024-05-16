@@ -110,6 +110,7 @@ Model* fishObjModel2;
 Model* fishMan;
 Model* rock;
 Model* seaObjects;
+Model* krab;
 
 glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
@@ -345,6 +346,8 @@ int main(int argc, char** argv)
     seaObjects = new Model{ currentPath + "\\Models\\SeaObjects\\model.obj", false };
     seaObjects->setPos(glm::vec3(10.0f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
+    krab = new Model{ currentPath + "\\Models\\Krab\\model.obj", false };
+    krab->setPos(glm::vec3(0.5f, 0.f, 5.5f), glm::vec3(19.5f, 0.f, 5.5f), 180.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -560,6 +563,16 @@ void renderScene(Shader& shader)
     // model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     seaObjects->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    krab->moveObject(incrementMoveSpeed-0.0037, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), krab->currentPos);
+    model = glm::scale(model, glm::vec3(0.006f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(krab->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+    shader.setMat4("model", model);
+    krab->Draw(shader);
 }
 
 unsigned int planeVAO = 0;
