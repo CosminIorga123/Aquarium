@@ -16,6 +16,7 @@
 #include <minwindef.h>
 #include "AquariumObj.h"
 #include <map>
+#include "TextRenderer.h"
 
 enum class WindowType {
     NONE,
@@ -92,6 +93,7 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 
 int main(int argc, char** argv);
 
+void renderMenu();
 void renderScene(Shader& shader);
 void renderCube();
 void renderFloor();
@@ -106,7 +108,11 @@ double deltaTime = 0.0f;	// time between current frame and last frame
 double lastFrame = 0.0f;
 bool rotatingLight = false;
 bool isDay = true;
+bool menuShouldBeShown = false;
+bool objectsShouldMove = true;
+
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
+TextRenderer* Text;
 Model* fishObjModel;
 Model* fishObjModel2;
 Model* fishMan;
@@ -159,6 +165,10 @@ int main(int argc, char** argv)
 
 	// Create camera
 	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 10.0));
+
+    // Initialize textRenderer and load font
+    Text = new TextRenderer(SCR_WIDTH, SCR_HEIGHT, currentPath + "\\Shaders");
+    Text->Load(currentPath + "\\Fonts\\" + "OCRAEXT.TTF", 24);
 
 	// configure global opengl state
 	// -----------------------------
@@ -525,7 +535,8 @@ int main(int argc, char** argv)
                     break;
                 }
         }
-
+        
+        renderMenu();
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -537,6 +548,28 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+void renderMenu()
+{
+    glDisable(GL_DEPTH_TEST);
+
+    static std::vector<const char*> messages{ "MENU", "Press 1 to show menu", "Press 2 to hide menu", "Press 3 to reset camera position", 
+        "Press 4 for day", "Press 5 for night","Press 6 to disable movement", "Press 7 to enable movement" };
+    if (menuShouldBeShown)
+    {
+        Text->RenderText(messages[0], 25.0f, SCR_HEIGHT - 50.0f, 0.7f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[2], 25.0f, SCR_HEIGHT - 65.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[3], 25.0f, SCR_HEIGHT - 75.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[4], 25.0f, SCR_HEIGHT - 85.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[5], 25.0f, SCR_HEIGHT - 95.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[6], 25.0f, SCR_HEIGHT - 105.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+        Text->RenderText(messages[7], 25.0f, SCR_HEIGHT - 115.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+    }
+    else 
+    {
+        Text->RenderText(messages[1], 25.0f, SCR_HEIGHT - 50.0f, 0.7f, glm::vec3(1.0f, 1.0f, 1.0f), SCR_WIDTH, SCR_HEIGHT);
+    }
+    glEnable(GL_DEPTH_TEST);
+}
 
 float incrementMoveSpeed = 0.004;
 float incrementRotationSpeed = 0.4;
@@ -550,7 +583,8 @@ void renderScene(Shader& shader)
     renderFloor();
 
     model = glm::mat4(1.0f);
-    fishObjModel->moveObject(incrementMoveSpeed, incrementRotationSpeed);
+    if(objectsShouldMove)
+        fishObjModel->moveObject(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel->currentPos);
     model = glm::scale(model, glm::vec3(0.03f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -559,7 +593,8 @@ void renderScene(Shader& shader)
     fishObjModel->Draw(shader);
 
     model = glm::mat4(1.0f);
-    fishObjModel2->moveObject(incrementMoveSpeed, incrementRotationSpeed);
+    if (objectsShouldMove)
+        fishObjModel2->moveObject(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel2->currentPos);
     model = glm::scale(model, glm::vec3(0.1f));
     model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -592,7 +627,8 @@ void renderScene(Shader& shader)
     seaObjects->Draw(shader);
 
     model = glm::mat4(1.0f);
-    krab->moveObject(incrementMoveSpeed-0.0037, incrementRotationSpeed);
+    if (objectsShouldMove)
+        krab->moveObject(incrementMoveSpeed-0.0037, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), krab->currentPos);
     model = glm::scale(model, glm::vec3(0.006f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -844,6 +880,7 @@ void drawCeiling() {
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture)
 {
+    //camera
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -859,26 +896,48 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		pCamera->ProcessKeyboard(ECameraMovementType::DOWN, (float)deltaTime);
 
+    //reset camera position
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) 
+    {
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        pCamera->Reset(width, height);
+
+    }
+
+    //menu
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    {
+        menuShouldBeShown = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+    {
+        menuShouldBeShown = false;
+    }
+
 	//night and day
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && !isDay)
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS && !isDay)
 	{
 		isDay = true;
 		setFaces(faces, cubemapTexture);
 	}
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && isDay)
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS && isDay)
 	{
 		isDay = false;
 		setFaces(faces, cubemapTexture);
         lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 
+    //movement
+    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+    {
+        objectsShouldMove = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+    {
+        objectsShouldMove = true;
+    }
 
-	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-		pCamera->Reset(width, height);
-
-	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -969,42 +1028,3 @@ void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
 	}
 	cubemapTexture = loadCubemap(faces);
 }
-
-//renders
-/*
-
-		////yellow fish
-		//auto modelMatrix = glm::mat4(1.0f);
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(25.0f, 8.0f, -2.0f));
-		//modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
-		//usedShader.setMat4("model", modelMatrix);
-		//fish.Draw(usedShader);
-
-		////blue fish
-		//auto fish2Matrix = glm::mat4(1.0f);
-		//fish2Matrix = glm::translate(fish2Matrix, glm::vec3(30.0f, -3.0f, 0.0f));
-		//fish2Matrix = glm::rotate(fish2Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//fish2Matrix = glm::scale(fish2Matrix, glm::vec3(0.5f));
-		//usedShader.setMat4("model", fish2Matrix);
-		//fish2.Draw(usedShader);
-
-		////clown fish
-		//auto fish3Matrix = glm::mat4(1.0f);
-		//fish3Matrix = glm::translate(fish3Matrix, glm::vec3(20.0f, -3.0f, 0.0f));
-		//usedShader.setMat4("model", fish3Matrix);
-		//fish3.Draw(usedShader);
-
-		////green-yellow fish
-		//auto fish4Matrix = glm::mat4(1.0f);
-		//fish4Matrix = glm::translate(fish4Matrix, glm::vec3(35.0f, -3.0f, 0.0f));
-		//fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//fish4Matrix = glm::rotate(fish4Matrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//fish4Matrix = glm::scale(fish4Matrix, glm::vec3(0.5f));
-		//usedShader.setMat4("model", fish4Matrix);
-		//fish4.Draw(usedShader);
-
-		////rock - can be multiplied for decoration
-		//auto rockMatrix = glm::mat4(1.0f);
-		//rockMatrix = glm::translate(rockMatrix, glm::vec3(50.0f, -3.0f, 0.0f));
-		//usedShader.setMat4("model", rockMatrix);
-		//rock.Draw(usedShader);*/

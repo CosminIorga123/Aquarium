@@ -42,6 +42,9 @@
     <ClCompile Include="Rock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -77,6 +80,9 @@
     <ClInclude Include="Rock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Shaders\ShadowMapping.vs">
@@ -107,6 +113,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\Shaders\Blending.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Shaders\Text2D.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Shaders\Text2D.vs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
