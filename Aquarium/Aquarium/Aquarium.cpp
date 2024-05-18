@@ -119,8 +119,9 @@ float factorOfDarkness = 90 / 100.0;
 bool rotatingLight = false;
 bool isDay = true;
 bool menuShouldBeShown = false;
+bool hideMenuCompletely = false;
 bool objectsShouldMove = true;
-glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
+glm::vec3 lightPos(0.0f, 2.0f, 2.5f);
 
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 TextRenderer* Text;
@@ -303,10 +304,6 @@ int main(int argc, char** argv)
 
     usedShader.setInt("texture_diffuse1", 0);
 
-	// lighting info
-	// -------------
-    //glm::vec3 lightPos(8.0f, 2.0f, 2.5f);
-    
     // prepare 3d models for aquarium
     // --------------
 
@@ -591,6 +588,8 @@ int main(int argc, char** argv)
 // --------------------
 void renderMenu()
 {
+    if (hideMenuCompletely)
+        return;
     glDisable(GL_DEPTH_TEST);
 
     static std::vector<const char*> messages{ "MENU", "Press 1 to show menu", "Press 2 to hide menu", "Press 3 to reset camera position", 
@@ -1025,7 +1024,16 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
     {
         menuShouldBeShown = false;
     }
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+    {
+        hideMenuCompletely = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
+    {
+        hideMenuCompletely = false;
+    }
 
+    
 	//night and day
 	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS && !isDay)
 	{
