@@ -115,6 +115,7 @@ void freeMemory();
 std::string currentPath = GetCurrentPath();
 double deltaTime = 0.0f;	// time between current frame and last frame
 double lastFrame = 0.0f;
+float factorOfDarkness = 90 / 100.0;
 bool rotatingLight = false;
 bool isDay = true;
 bool menuShouldBeShown = false;
@@ -300,6 +301,7 @@ int main(int argc, char** argv)
 	shadowMappingShader.setInt("diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
 
+    usedShader.setInt("texture_diffuse1", 0);
 
 	// lighting info
 	// -------------
@@ -389,7 +391,7 @@ int main(int argc, char** argv)
 
         // randomly generate new bubble
         // ------
-        if (random(0.f, 1.f) < 0.2f)
+        if (random(0.f, 1.f) < 0.2f && objectsShouldMove)
             bubbles.emplace_back(glm::vec3(random(0.f, 20.f), 0.01f, random(0.f, 6.f)));
 
         // sort transparent objects
@@ -429,53 +431,64 @@ int main(int argc, char** argv)
         // render
         // ------
         // 1. render depth of scene to texture (from light's perspective)
-        
-        glm::mat4 lightProjection, lightView;
-        glm::mat4 lightSpaceMatrix;
-        float near_plane = 1.0f, far_plane = 30.5f;
-        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-
-        lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
-        lightSpaceMatrix = lightProjection * lightView;
-
-        // render scene from light's point of view
-        shadowMappingDepthShader.use();
-        shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        renderScene(shadowMappingDepthShader);
-        glCullFace(GL_BACK);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // reset viewport
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // render the scene
-        // 2. render scene as normal using the generated depth/shadow map 
-
-        shadowMappingShader.use();
         glm::mat4 projection = camera->GetProjectionMatrix();
         glm::mat4 view = camera->GetViewMatrix();
-        shadowMappingShader.setMat4("projection", projection);
-        shadowMappingShader.setMat4("view", view);
-        // set light uniforms
-        shadowMappingShader.SetVec3("viewPos", camera->GetPosition());
-        shadowMappingShader.SetVec3("lightPos", lightPos);
-        shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
-        glDisable(GL_CULL_FACE);
-        renderScene(shadowMappingShader);
+        if (isDay)
+        {
+            glm::mat4 lightProjection, lightView;
+            glm::mat4 lightSpaceMatrix;
+            float near_plane = 1.0f, far_plane = 30.5f;
+            lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
+            lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
+            lightSpaceMatrix = lightProjection * lightView;
+
+            // render scene from light's point of view
+            shadowMappingDepthShader.use();
+            shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+            glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+            glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            renderScene(shadowMappingDepthShader);
+            glCullFace(GL_BACK);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // reset viewport
+            glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // render the scene
+            // 2. render scene as normal using the generated depth/shadow map 
+
+            shadowMappingShader.use();
+            shadowMappingShader.setMat4("projection", projection);
+            shadowMappingShader.setMat4("view", view);
+            // set light uniforms
+            shadowMappingShader.SetVec3("viewPos", camera->GetPosition());
+            shadowMappingShader.SetVec3("lightPos", lightPos);
+            shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, depthMap);
+            glDisable(GL_CULL_FACE);
+            renderScene(shadowMappingShader);
+        }
+        else
+        {
+            usedShader.use(); 
+            usedShader.setMat4("view", view);
+            usedShader.setMat4("projection", projection); 
+            usedShader.setFloat("factor", factorOfDarkness);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, aquariumFloorTexture);
+            renderScene(usedShader);
+        }
         
         // draw skybox as last
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -516,12 +529,18 @@ int main(int argc, char** argv)
                     color = glm::vec4(0.078f, 0.031f, 0.008f, 1.0f);
                 //top layer light gray
                 if (it->second.first.y == aquariumHeight - 1.0f)
-                    color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
+                    color = glm::vec4(0.473, 0.543, 0.629, 0.15f);
                 //bubbles
                 if (it->second.second == WindowType::BUBBLE)
                 {
                     model = glm::scale(model, glm::vec3(0.03f));
                     color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
+                }
+                if (!isDay)
+                {
+                    color.x = color.x - 0.5f;
+                    color.y = color.y - 0.5f;
+                    color.z = color.z - 0.85f;
                 }
                 windowShader.setMat4("model", model);
                 windowShader.SetVec4("color", color);
@@ -544,6 +563,17 @@ int main(int argc, char** argv)
                         break;
                 }
         }
+        glm::vec4 color = glm::vec4(0.078f, 0.031f, 0.008f, 1.0f);
+        if (!isDay)
+        {
+            color.x = color.x - 0.5f;
+            color.y = color.y - 0.5f;
+            color.z = color.z - 0.9f;
+        }
+        windowShader.setMat4("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)));
+        windowShader.SetVec4("color", color);
+        renderFloor();
+
         renderMenu();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
