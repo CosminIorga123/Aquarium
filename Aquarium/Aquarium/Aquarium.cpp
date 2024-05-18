@@ -15,6 +15,8 @@
 #include "Camera.h"
 #include "Model.h"
 #include "TextRenderer.h"
+#include <unordered_set>
+#include <random>
 
 enum class WindowType {
     NONE,
@@ -28,6 +30,17 @@ enum class WindowType {
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
+
+template<class T>
+T random(T min, T max)
+{
+    static std::mt19937 gen{ std::random_device{}() };
+    using dist = std::conditional_t<
+        std::is_integral<T>::value,
+        std::uniform_int_distribution<T>,
+        std::uniform_real_distribution<T>>;
+    return dist{ min, max }(gen);
+}
 
 static std::string GetCurrentPath()
 {
@@ -97,7 +110,6 @@ void renderSphere();
 void renderSquare();
 void renderRectangular();
 void renderCeiling();
-//void drawBubbles();
 void freeMemory();
 
 // program variables
@@ -118,12 +130,11 @@ Model* fishMan;
 Model* rock;
 Model* seaObjects;
 Model* krab;
-Model* bubble;
 Model* statue;
 Model* wall;
 Model* greek;
-Camera* pCamera;
-
+Camera* camera;
+std::vector<glm::vec3> bubbles;
 
 int main(int argc, char** argv)
 {
@@ -161,7 +172,7 @@ int main(int argc, char** argv)
     
 
 	// Create camera
-	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 10.0));
+	camera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 10.0));
 
     // Initialize textRenderer and load font
     Text = new TextRenderer(SCR_WIDTH, SCR_HEIGHT, currentPath + "\\Shaders");
@@ -180,7 +191,6 @@ int main(int argc, char** argv)
 	Shader shadowMappingShader((currentPath + "\\Shaders" + "\\ShadowMapping.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMapping.fs").c_str());
 	Shader shadowMappingDepthShader((currentPath + "\\Shaders" + "\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders" + "\\ShadowMappingDepth.fs").c_str());
 	Shader windowShader((currentPath + "\\Shaders" + "\\Blending.vs").c_str(), (currentPath + "\\Shaders" + "\\Blending.fs").c_str());
-    //Shader bubbleShader((currentPath + "\\Shaders" + "\\Blending.vs").c_str(), (currentPath + "\\Shaders" + "\\Blending.fs").c_str());
 
 	// load textures
 	// -------------
@@ -197,7 +207,6 @@ int main(int argc, char** argv)
 	unsigned int cubemapTexture = loadCubemap(faces);
 
 	// skybox vertices
-
 	float skyboxVertices[] = {
 		// positions          
 		-1.0f,  1.0f, -1.0f,
@@ -288,10 +297,6 @@ int main(int argc, char** argv)
 	skyBoxShader.use();
 	skyBoxShader.setInt("skybox", 0);
 
-    /*bubbleShader.use();
-    bubbleShader.setInt("bubbleTexture", 0);
-    bubbleShader.setBool("blending", true);*/
-
 	shadowMappingShader.use();
 	shadowMappingShader.setInt("diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
@@ -301,14 +306,14 @@ int main(int argc, char** argv)
 	// -------------
     //glm::vec3 lightPos(8.0f, 2.0f, 2.5f);
     
-	glEnable(GL_CULL_FACE);
+    // prepare 3d models for aquarium
+    // --------------
 
-    std::vector<std::pair<glm::vec3, WindowType>> transparentObjects;
     const float aquariumLength = 20.0f;
     const float aquariumHeight = 5.0f;
     const float aquariumWidth = 6.0f;
 
-
+    std::vector<std::pair<glm::vec3, WindowType>> transparentObjects;
     //front and back walls
     for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
         for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
@@ -329,8 +334,6 @@ int main(int argc, char** argv)
             transparentObjects.emplace_back(std::make_pair(glm::vec3(i, aquariumHeight - 1.5f, j), WindowType::CEILING));
         }
     }
-
-
 
     // load models
     // -----------
@@ -353,9 +356,6 @@ int main(int argc, char** argv)
 
     krab = new Model{ currentPath + "\\Models\\Krab\\model.obj", false };
     krab->setPos(glm::vec3(0.5f, 0.f, 5.5f), glm::vec3(19.5f, 0.f, 5.5f), 180.0f);
-
-    bubble = new Model{ currentPath + "\\Models\\Bubble\\Bubble.obj", false };
-    bubble->setPos(glm::vec3(10.0f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
     statue = new Model{ currentPath + "\\Models\\Ship\\model.obj", false };
     statue->setPos(glm::vec3(17.5f, 0.f, 2.2f), glm::vec3(19.5f, 0.f, 5.5f), 0.0f);
@@ -388,12 +388,30 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // randomly generate new bubble
+        // ------
+        if (random(0.f, 1.f) < 0.2f)
+            bubbles.emplace_back(glm::vec3(random(0.f, 20.f), 0.01f, random(0.f, 6.f)));
 
-        //sort transparent objects
+        // sort transparent objects
+        // ------
         std::multimap<float, std::pair<glm::vec3, WindowType>> sortedMap;
         for (int i = 0; i < transparentObjects.size(); i++) {
-            float distance = glm::length(pCamera->GetPosition() - transparentObjects[i].first);
+            float distance = glm::length(camera->GetPosition() - transparentObjects[i].first);
             sortedMap.emplace(std::make_pair(distance, (transparentObjects[i])));
+        }
+        for (int i = bubbles.size() - 1; i >= 0; --i) {
+            float distance = glm::length(camera->GetPosition() - bubbles[i]);
+            sortedMap.emplace(std::make_pair(distance, std::make_pair(bubbles[i], WindowType::BUBBLE)));
+            if (objectsShouldMove)
+            {
+                //increase y position of bubble
+                bubbles[i].y += 0.04f;
+                // delete bubble if above aquarium
+                if (bubbles[i].y > 4.f) {
+                    bubbles.erase(bubbles.begin() + i);
+                }
+            }
         }
 
         // light movement
@@ -413,8 +431,6 @@ int main(int argc, char** argv)
         // ------
         // 1. render depth of scene to texture (from light's perspective)
         
-
-
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
         float near_plane = 1.0f, far_plane = 30.5f;
@@ -446,12 +462,12 @@ int main(int argc, char** argv)
         // 2. render scene as normal using the generated depth/shadow map 
 
         shadowMappingShader.use();
-        glm::mat4 projection = pCamera->GetProjectionMatrix();
-        glm::mat4 view = pCamera->GetViewMatrix();
+        glm::mat4 projection = camera->GetProjectionMatrix();
+        glm::mat4 view = camera->GetViewMatrix();
         shadowMappingShader.setMat4("projection", projection);
         shadowMappingShader.setMat4("view", view);
         // set light uniforms
-        shadowMappingShader.SetVec3("viewPos", pCamera->GetPosition());
+        shadowMappingShader.SetVec3("viewPos", camera->GetPosition());
         shadowMappingShader.SetVec3("lightPos", lightPos);
         shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
         glActiveTexture(GL_TEXTURE0);
@@ -465,7 +481,7 @@ int main(int argc, char** argv)
         // draw skybox as last
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
         skyBoxShader.use();
-        view = glm::mat4(glm::mat3(pCamera->GetViewMatrix())); // remove translation from the view matrix
+        view = glm::mat4(glm::mat3(camera->GetViewMatrix())); // remove translation from the view matrix
         skyBoxShader.setMat4("view", view);
         skyBoxShader.setMat4("projection", projection);
         // skybox cube
@@ -477,19 +493,17 @@ int main(int argc, char** argv)
         glDepthFunc(GL_LESS); // set depth function back to default
     
         windowShader.use();
-        projection = pCamera->GetProjectionMatrix();
-        view = pCamera->GetViewMatrix();
+        projection = camera->GetProjectionMatrix();
+        view = camera->GetViewMatrix();
         windowShader.setMat4("projection", projection);
         windowShader.setMat4("view", view);
 
+        //render light source as a sphere
         glm::mat4 model(1.f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.03f));
         windowShader.setMat4("model", model);
         windowShader.SetVec4("color", glm::vec4(1, 1, 1, 1));
-        /*bubbleShader.use();
-        bubbleShader.setMat4("projection", projection);
-        bubbleShader.setMat4("view", view);*/
         renderSphere();
 
         //furthest object is drawn first
@@ -504,26 +518,35 @@ int main(int argc, char** argv)
                 //top layer light gray
                 if (it->second.first.y == aquariumHeight - 1.0f)
                     color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
-
+                //bubbles
+                if (it->second.second == WindowType::BUBBLE)
+                {
+                    model = glm::scale(model, glm::vec3(0.03f));
+                    color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
+                }
                 windowShader.setMat4("model", model);
                 windowShader.SetVec4("color", color);
-                switch (it->second.second) {
-                case WindowType::SQUARE:
-                    renderSquare();
-                    break;
-                case WindowType::RECTANGULAR:
-                    renderRectangular();
-                    break;
-                case WindowType::CEILING:
-                    renderCeiling();
-                    break;
-                case WindowType::BUBBLE:
-                    //drawBubbles(); ??
-                    break;
+                switch (it->second.second) 
+                {
+                    case WindowType::SQUARE:
+                        renderSquare();
+                        break;
+                    case WindowType::RECTANGULAR:
+                        renderRectangular();
+                        break;
+                    case WindowType::CEILING:
+                        renderCeiling();
+                        break;
+                    case WindowType::BUBBLE:
+                        renderSphere();
+                        break;
+                    default:
+                        throw std::exception{ "no window type provided" };
+                        break;
                 }
         }
-        
         renderMenu();
+
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -535,6 +558,8 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+// renders the menu
+// --------------------
 void renderMenu()
 {
     glDisable(GL_DEPTH_TEST);
@@ -647,14 +672,6 @@ void renderScene(Shader& shader)
     //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     greek->Draw(shader);
-
-    // nu are textura?
-    model = glm::mat4(1.0f);
-    model = glm::translate(glm::mat4(1.0f), bubble->currentPos);
-    model = glm::scale(model, glm::vec3(100.0f));
-    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    shader.setMat4("model", model);
-    bubble->Draw(shader);
 }
 
 unsigned int planeVAO = 0;
@@ -942,8 +959,6 @@ void renderSphere()
     glBindVertexArray(0);
 }
 
-
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned int& cubemapTexture)
 {
@@ -951,24 +966,24 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::FORWARD, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::FORWARD, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::BACKWARD, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::BACKWARD, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::LEFT, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::LEFT, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::RIGHT, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::RIGHT, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::UP, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::UP, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(Camera::ECameraMovementType::DOWN, (float)deltaTime);
+		camera->ProcessKeyboard(Camera::ECameraMovementType::DOWN, (float)deltaTime);
 
     //reset camera position
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) 
     {
         int width, height;
         glfwGetWindowSize(window, &width, &height);
-        pCamera->Reset(width, height);
+        camera->Reset(width, height);
 
     }
 
@@ -1013,17 +1028,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
-	pCamera->Reshape(width, height);
+	camera->Reshape(width, height);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	pCamera->MouseControl((float)xpos, (float)ypos);
+	camera->MouseControl((float)xpos, (float)ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yOffset)
 {
-	pCamera->ProcessMouseScroll((float)yOffset);
+	camera->ProcessMouseScroll((float)yOffset);
 }
 
 
@@ -1098,7 +1113,7 @@ void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
 
 void freeMemory()
 {
-    delete pCamera;
+    delete camera;
     delete SoundEngine;
     delete Text;
     delete fishObjModel;
@@ -1107,7 +1122,6 @@ void freeMemory()
     delete rock;
     delete seaObjects;
     delete krab;
-    delete bubble;
     delete statue;
     delete wall;
     delete greek;
