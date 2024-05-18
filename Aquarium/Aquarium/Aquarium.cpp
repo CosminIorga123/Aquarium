@@ -6,16 +6,14 @@
 #include <locale>
 #include <codecvt>
 #include <vector>
-
-#include "Camera.h"
-#include "ECameraMovement.h"
-#include "Fish.h"
+#include <corecrt_math_defines.h>
 
 #include <irrKlang.h>
 #include "stb_image.h"
 #include <minwindef.h>
-#include "AquariumObj.h"
-#include <map>
+
+#include "Camera.h"
+#include "Model.h"
 #include "TextRenderer.h"
 
 enum class WindowType {
@@ -45,10 +43,8 @@ static std::string GetCurrentPath()
 }
 
 
-Camera* pCamera = nullptr;
-std::string currentPath = GetCurrentPath();
-
 void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture);
+unsigned int loadCubemap(const std::vector<std::string>& faces);
 static unsigned int CreateTexture(const std::string& strTexturePath)
 {
 	unsigned int textureId = -1;
@@ -97,19 +93,22 @@ void renderMenu();
 void renderScene(Shader& shader);
 void renderCube();
 void renderFloor();
-void drawSquare();
-void drawRectangular();
-void drawCeiling();
+void renderSphere();
+void renderSquare();
+void renderRectangular();
+void renderCeiling();
 //void drawBubbles();
-unsigned int loadCubemap(const std::vector<std::string>& faces);
+void freeMemory();
 
-// timing
+// program variables
+std::string currentPath = GetCurrentPath();
 double deltaTime = 0.0f;	// time between current frame and last frame
 double lastFrame = 0.0f;
 bool rotatingLight = false;
 bool isDay = true;
 bool menuShouldBeShown = false;
 bool objectsShouldMove = true;
+glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 TextRenderer* Text;
@@ -123,8 +122,8 @@ Model* bubble;
 Model* statue;
 Model* wall;
 Model* greek;
+Camera* pCamera;
 
-glm::vec3 lightPos(0.0f, 3.0f, 2.5f);
 
 int main(int argc, char** argv)
 {
@@ -141,8 +140,6 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// glfw window creation
 
     // glfw window creation
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Aquarium", glfwGetPrimaryMonitor(), NULL);
@@ -198,22 +195,6 @@ int main(int argc, char** argv)
 		currentPath + "\\Textures\\SkyBox\\back.jpg"
 	};
 	unsigned int cubemapTexture = loadCubemap(faces);
-
-	// load models
-	// -----------
-	//std::string modelFileName = currentPath + "\\Models\\TropicalFish9\\TropicalFish09.obj";
-	//std::string modelFileName2 = currentPath + "\\Models\\Fish01\\13007_Blue-Green_Reef_Chromis_v2_l3.obj";
-	//std::string modelFileName3 = currentPath + "\\Models\\saltwater_aquarium_v1_L1.123cdde764e6-103e-4374-98e3-c8863fc34c2c\\12987_Saltwater_Aquarium_v1_l1.obj";
-	//std::string modelFileName4 = currentPath + "\\Models\\Fish02\\OBJ.obj";
-	//std::string modelFileName5 = currentPath + "\\Models\\Boesemani_Rainbow_v1_L2.123cbc6a2e9e-f317-488f-abf9-8b3bcb3898c5\\12999_Boesemani_Rainbow_v1_l2.obj";
-	//std::string modelFileName6 = currentPath + "\\Models\\Rock1\\Rock1.obj";
-
-	//Model fish(modelFileName, false);
-	//Model fish2(modelFileName2, false);
-	////Model aquarium(modelFileName3, false);
-	//Model fish3(modelFileName4, false);
-	//Model fish4(modelFileName5, false);
-	//Model rock(modelFileName6, false);
 
 	// skybox vertices
 
@@ -351,6 +332,9 @@ int main(int argc, char** argv)
 
 
 
+    // load models
+    // -----------
+    
 	//yellow fish
     fishObjModel = new Model{ currentPath + "\\Models\\Fish06\\Fish06.obj", false };
     fishObjModel->setPos(glm::vec3(2.0f, 1.0f, 3.3f), glm::vec3(12.0f, 2.0f, 2.0f), 180.0f);
@@ -412,20 +396,23 @@ int main(int argc, char** argv)
             sortedMap.emplace(std::make_pair(distance, (transparentObjects[i])));
         }
 
-
-        // render
-        // ------
-        // 1. render depth of scene to texture (from light's perspective)
+        // light movement
+        // -----------
         if (isDay)
         {
             static float fRadius = 15.0f;
             lightPos.x = fRadius * std::cos(currentFrame);
-            lightPos.y= 3.0f;
+            lightPos.y = 3.0f;
         }
         else
         {
             lightPos.y = -1000.0f;
         }
+
+        // render
+        // ------
+        // 1. render depth of scene to texture (from light's perspective)
+        
 
 
         glm::mat4 lightProjection, lightView;
@@ -503,7 +490,7 @@ int main(int argc, char** argv)
         /*bubbleShader.use();
         bubbleShader.setMat4("projection", projection);
         bubbleShader.setMat4("view", view);*/
-        renderCube();
+        renderSphere();
 
         //furthest object is drawn first
         for (auto it = sortedMap.rbegin(); it != sortedMap.rend(); ++it)
@@ -522,13 +509,13 @@ int main(int argc, char** argv)
                 windowShader.SetVec4("color", color);
                 switch (it->second.second) {
                 case WindowType::SQUARE:
-                    drawSquare();
+                    renderSquare();
                     break;
                 case WindowType::RECTANGULAR:
-                    drawRectangular();
+                    renderRectangular();
                     break;
                 case WindowType::CEILING:
-                    drawCeiling();
+                    renderCeiling();
                     break;
                 case WindowType::BUBBLE:
                     //drawBubbles(); ??
@@ -543,7 +530,7 @@ int main(int argc, char** argv)
 	}
 
 	// optional: de-allocate all resources once they've outlived their purpose:
-	delete pCamera;
+    freeMemory();
 	glfwTerminate();
 	return 0;
 }
@@ -780,7 +767,7 @@ void renderCube()
 
 unsigned int transparentRectVAO = 0;
 unsigned int transparentRectVBO = 0;
-void drawRectangular() {
+void renderRectangular() {
 	if (transparentRectVAO == 0) {
 		float transparentVertices[] = {
 			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -812,7 +799,7 @@ void drawRectangular() {
 
 unsigned int transparentSquareVAO = 0;
 unsigned int transparentSquareRectVBO = 0;
-void drawSquare() {
+void renderSquare() {
     if (transparentSquareVAO == 0) {
         float transparentVertices[] = {
             // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -844,7 +831,7 @@ void drawSquare() {
 
 unsigned int transparentCeilingVAO = 0;
 unsigned int transparentCeilingVBO = 0;
-void drawCeiling() {
+void renderCeiling() {
     if (transparentCeilingVAO == 0) {
         float transparentVertices[] = {
             // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -873,7 +860,87 @@ void drawCeiling() {
     glBindVertexArray(0);
 }
 
+unsigned int sphereVAO = 0;
+unsigned int sphereVBO = 0;
+const unsigned int X_SEGMENTS = 64;
+const unsigned int Y_SEGMENTS = 64;
+void renderSphere()
+{
+    if (sphereVAO == 0)
+    {
+        std::vector<float> vertices;
 
+        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+        {
+            for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+            {
+                float xSegment = (float)x / (float)X_SEGMENTS;
+                float ySegment = (float)y / (float)Y_SEGMENTS;
+                float xPos = std::cos(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+                float yPos = std::cos(ySegment * M_PI);
+                float zPos = std::sin(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+
+                vertices.push_back(xPos);
+                vertices.push_back(yPos);
+                vertices.push_back(zPos);
+                vertices.push_back(xPos);
+                vertices.push_back(yPos);
+                vertices.push_back(zPos);
+                vertices.push_back(xSegment);
+                vertices.push_back(ySegment);
+            }
+        }
+
+        std::vector<unsigned int> indices;
+        bool oddRow = false;
+        for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
+        {
+            if (!oddRow) // even rows: y == 0, y == 2; and so on
+            {
+                for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+                {
+                    indices.push_back(y * (X_SEGMENTS + 1) + x);
+                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+                }
+            }
+            else
+            {
+                for (int x = X_SEGMENTS; x >= 0; --x)
+                {
+                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+                    indices.push_back(y * (X_SEGMENTS + 1) + x);
+                }
+            }
+            oddRow = !oddRow;
+        }
+
+        glGenVertexArrays(1, &sphereVAO);
+        glGenBuffers(1, &sphereVBO);
+        unsigned int ebo;
+        glGenBuffers(1, &ebo);
+
+        glBindVertexArray(sphereVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    glBindVertexArray(sphereVAO);
+    glDrawElements(GL_TRIANGLE_STRIP, (X_SEGMENTS + 1) * 2 * Y_SEGMENTS, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
 
 
 
@@ -884,17 +951,17 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::FORWARD, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::FORWARD, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::BACKWARD, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::BACKWARD, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::LEFT, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::LEFT, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::RIGHT, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::RIGHT, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::UP, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::UP, (float)deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		pCamera->ProcessKeyboard(ECameraMovementType::DOWN, (float)deltaTime);
+		pCamera->ProcessKeyboard(Camera::ECameraMovementType::DOWN, (float)deltaTime);
 
     //reset camera position
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) 
@@ -1027,4 +1094,21 @@ void setFaces(std::vector<std::string>& faces, unsigned int& cubemapTexture)
 		};
 	}
 	cubemapTexture = loadCubemap(faces);
+}
+
+void freeMemory()
+{
+    delete pCamera;
+    delete SoundEngine;
+    delete Text;
+    delete fishObjModel;
+    delete fishObjModel2;
+    delete fishMan;
+    delete rock;
+    delete seaObjects;
+    delete krab;
+    delete bubble;
+    delete statue;
+    delete wall;
+    delete greek;
 }

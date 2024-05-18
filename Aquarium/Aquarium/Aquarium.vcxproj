@@ -137,25 +137,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Aquarium.cpp" />
-    <ClCompile Include="AquariumObj.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Fish.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="RenderableObject.cpp" />
-    <ClCompile Include="Rock.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AquariumObj.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ECameraMovement.h" />
-    <ClInclude Include="Fish.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="RenderableObject.h" />
-    <ClInclude Include="Rock.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />

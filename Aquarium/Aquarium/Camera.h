@@ -15,15 +15,23 @@
 #include <fstream>
 #include <sstream>
 
-
-#include "ECameraMovement.h"
-
 #pragma comment (lib, "glfw3dll.lib")
 #pragma comment (lib, "glew32.lib")
 #pragma comment (lib, "OpenGL32.lib")
 
 class Camera
 {
+public:
+    enum class ECameraMovementType
+    {
+        FORWARD,
+        BACKWARD,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
+
 private:
     // Default camera values
     const float zNEAR = 0.1f;
