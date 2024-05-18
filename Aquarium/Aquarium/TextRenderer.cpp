@@ -6,13 +6,12 @@
 ** Creative Commons, either version 4 of the License, or (at your
 ** option) any later version.
 ******************************************************************/
+#include "TextRenderer.h"
 #include <iostream>
 
 #include <gtc/matrix_transform.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include "TextRenderer.h"
 
 
 TextRenderer::TextRenderer(unsigned int width, unsigned int height, std::string pathToShaderDirectory)

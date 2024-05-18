@@ -15,7 +15,6 @@
 #include "Camera.h"
 #include "Model.h"
 #include "TextRenderer.h"
-#include <unordered_set>
 #include <random>
 
 enum class WindowType {

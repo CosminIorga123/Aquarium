@@ -71,12 +71,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\Include\_externals\glm;..\..\Include\_externals\stb;..\..\Include\_externals\glfw-x64\include\GLFW;..\..\Include\_externals\glew-2.1.0\include;..\..\packages\Assimp.3.0.0\build\native\include;..\..\Include\_externals\irrKlang-64bit-1.6.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\packages\Assimp.3.0.0\build\native\lib\x64;..\..\Include\_externals\glew-2.1.0\lib\Release\x64;..\..\Include\_externals\glfw-x64\lib-vc2022;..\..\Include\_externals\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\Include\_externals\glm;..\..\Include\_externals\stb;..\..\Include\_externals\glfw-x64\include\GLFW;..\..\Include\_externals\glew-2.1.0\include;..\..\packages\Assimp.3.0.0\build\native\include;..\..\Include\_externals\irrKlang-64bit-1.6.0\include;..\..\Include\_externals\freetype\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\packages\Assimp.3.0.0\build\native\lib\x64;..\..\Include\_externals\glew-2.1.0\lib\Release\x64;..\..\Include\_externals\glfw-x64\lib-vc2022;..\..\Include\_externals\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;..\..\Include\_externals\freetype\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\..\..\_externals\glew-2.1.0\include;..\..\..\_externals\glm;..\..\..\_externals\glfw-x64\include\GLFW;..\..\..\_externals\stb;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\_externals\glfw-x64\lib-vc2022;..\..\..\_externals\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,7 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
