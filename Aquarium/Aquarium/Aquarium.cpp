@@ -135,6 +135,8 @@ Model* fishObjModel6;
 Model* fishObjModel7;
 Model* fishObjModel8;
 //
+Model* fishObjModel9;
+Model* fishObjModel10;
 Model* fishMan;
 Model* rock;
 Model* seaObjects;
@@ -371,6 +373,11 @@ int main(int argc, char** argv)
 
     //
 
+    fishObjModel9 = new Model{ currentPath + "\\Models\\Fish01\\TropicalFish08.obj", false };
+    fishObjModel9->setPos(glm::vec3(1.75f, 3.f, 1.5f), glm::vec3(1.75f, 3.f, 4.5f), 0.0f);
+
+    fishObjModel10 = new Model{ currentPath + "\\Models\\Fish07\\TropicalFish01.obj", false };
+    fishObjModel10->setPos(glm::vec3(19.75f, 0.5f, 5.f), glm::vec3(15.75f, 0.5f, 3.5f), 0.0f);
 
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
     fishMan->setPos(glm::vec3(19.25f, 0.f, 4.f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
@@ -745,9 +752,30 @@ void renderScene(Shader& shader)
     //
 
     model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel9->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel9->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel9->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel9->Draw(shader);
+    
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel10->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel10->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    model = glm::rotate(model, glm::radians(63.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel10->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel10->Draw(shader);
+
+    model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), fishMan->currentPos);
     model = glm::scale(model, glm::vec3(0.15f));
-//    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     fishMan->Draw(shader);
