@@ -146,6 +146,7 @@ Model* wall;
 Model* greek;
 Camera* camera;
 std::vector<glm::vec3> bubbles;
+Model* seaweed;
 
 int main(int argc, char** argv)
 {
@@ -389,7 +390,7 @@ int main(int argc, char** argv)
     seaObjects->setPos(glm::vec3(11.f, 0.f, 3.0f), glm::vec3(10.0f, 0.f, 3.0f), 0.0f);
 
     krab = new Model{ currentPath + "\\Models\\Krab\\model.obj", false };
-    krab->setPos(glm::vec3(0.5f, 0.f, 5.5f), glm::vec3(19.5f, 0.f, 5.5f), 180.0f);
+    krab->setPos(glm::vec3(0.5f, 0.f, 5.6f), glm::vec3(19.5f, 0.f, 5.6f), 180.0f);
 
     statue = new Model{ currentPath + "\\Models\\Ship\\model.obj", false };
     statue->setPos(glm::vec3(17.5f, 0.f, 2.2f), glm::vec3(19.5f, 0.f, 5.5f), 0.0f);
@@ -399,6 +400,9 @@ int main(int argc, char** argv)
 
     greek = new Model{ currentPath + "\\Models\\Statue\\model.obj", false };
     greek->setPos(glm::vec3(3.7f, 0.f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
+
+    seaweed = new Model{ currentPath + "\\Models\\Seaweed\\model.obj", false };
+    seaweed->setPos(glm::vec3(11.5f, 0.f, 1.22f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -775,7 +779,7 @@ void renderScene(Shader& shader)
     model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), fishMan->currentPos);
     model = glm::scale(model, glm::vec3(0.15f));
-    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+ // model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     fishMan->Draw(shader);
@@ -830,6 +834,15 @@ void renderScene(Shader& shader)
     //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     greek->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(glm::mat4(1.0f), seaweed->currentPos);
+    model = glm::scale(model, glm::vec3(0.08f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    shader.setMat4("model", model);
+    seaweed->Draw(shader);
+
 }
 
 unsigned int planeVAO = 0;
