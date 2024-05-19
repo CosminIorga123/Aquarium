@@ -121,7 +121,7 @@ bool isDay = true;
 bool menuShouldBeShown = false;
 bool hideMenuCompletely = false;
 bool objectsShouldMove = true;
-glm::vec3 lightPos(0.0f, 2.0f, 2.5f);
+glm::vec3 lightPos(3.0f, 6.0f, 2.5f);
 
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 TextRenderer* Text;
