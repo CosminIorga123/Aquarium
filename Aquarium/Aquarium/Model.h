@@ -17,10 +17,15 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
-    glm::vec3 startPos;
     glm::vec3 targetPos;
     glm::vec3 currentPos;
     float rotation;
+    bool isRotating = true;
+
+    glm::vec3 startPos;
+    glm::vec3 midPos;
+    glm::vec3 endPos;
+    int currentTarget;
 
     // constructor, expects a filepath to a 3D model.
     Model(string const& path, bool bSmoothNormals, bool gamma = false);
@@ -29,15 +34,20 @@ public:
 
     void setPos(glm::vec3 startPos, glm::vec3 targetPos, float rotation);
 
+    void setPosSplice(glm::vec3 startPos, glm::vec3 midPos, glm::vec3 endPos, float rotation);
+
     // draws the model, and thus all its meshes
     void Draw(Shader& shader);
 
-    bool moveObject(float moveIncrement, float rotateIncrement);
+    void moveObjectLinear(float moveIncrement, float rotateIncrement);
+
+    void moveObjectSplice(float moveIncrement, float rotateIncrement);
 
 private:
 
     float currentRotationIncrement = 0.0f;
     bool rotate180(float rotateIncrement);
+    bool rotateObjectSplice(float rotateIncrement, glm::vec3 direction);
 
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const& path, bool bSmoothNormals);

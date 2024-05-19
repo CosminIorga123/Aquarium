@@ -14,25 +14,73 @@ void Model::setPos(glm::vec3 startPos, glm::vec3 targetPos, float rotation)
     currentPos = startPos;
 }
 
+void Model::setPosSplice(glm::vec3 startPos, glm::vec3 midPos, glm::vec3 endPos, float rotation)
+{
+    this->rotation = rotation;
+    this->startPos = startPos;
+    this->midPos = midPos;
+    this->endPos = endPos;
+    currentPos = startPos;
+    currentTarget = 0;
+}
+
 void Model::Draw(Shader& shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
 }
 
-bool Model::moveObject(float moveIncrement, float rotateIncrement) {
+void Model::moveObjectLinear(float moveIncrement, float rotateIncrement) {
     if (glm::distance(currentPos, targetPos) <= moveIncrement) {
 
         if (rotate180(rotateIncrement)) {
             currentPos = targetPos;
             std::swap(startPos, targetPos);
         }
-        return true; // Return true when position is approximately equal to target
     }
     glm::vec3 direction = glm::normalize(targetPos - currentPos);
     currentPos += direction * moveIncrement;
-    // Check if position is approximately equal to the target within a given error margin
-    return false; // Return false if position is not yet equal to target
+}
+
+void Model::moveObjectSplice(float moveIncrement, float rotateIncrement) {
+
+    switch (currentTarget)
+    {
+    case 0:
+        targetPos = midPos;
+        break;
+    case 1:
+        targetPos = endPos;
+        break;
+    case 2:
+        targetPos = startPos;
+        break;
+    }
+
+    glm::vec3 direction = targetPos - currentPos;
+    float length = glm::length(direction);
+
+    if (length != 0) {
+        direction = glm::normalize(direction);
+
+        if (isRotating || !rotateObjectSplice(rotateIncrement, direction)) {
+            isRotating = true;
+            if (rotateObjectSplice(rotateIncrement, direction)) {
+                isRotating = false;
+            }
+            return;
+        }
+    }
+
+    if (glm::distance(currentPos, targetPos) <= moveIncrement) {
+        currentPos = targetPos;
+        currentTarget = (currentTarget + 1) % 3;
+        isRotating = true;
+    }
+    else if (length != 0) {
+        currentPos += direction * moveIncrement;
+    }
+
 }
 
 bool Model::rotate180(float rotateIncrement)
@@ -46,6 +94,29 @@ bool Model::rotate180(float rotateIncrement)
     currentRotationIncrement += rotateIncrement;
     rotation += rotateIncrement;
     return false;
+}
+
+bool Model::rotateObjectSplice(float rotateIncrement, glm::vec3 direction)
+{
+    float targetRotation = atan2(direction.y, direction.x);
+    targetRotation = glm::degrees(targetRotation);
+
+    float rotationDifference = targetRotation - rotation;
+    rotationDifference = fmod(rotationDifference + 360.0f, 360.0f);
+
+    if (rotationDifference > 180.0f) {
+        rotationDifference -= 360.0f;
+    }
+
+    float rotationStep = rotateIncrement;
+    if (std::abs(rotationDifference) < rotateIncrement) {
+        rotationStep = rotationDifference;
+    }
+
+    rotation += rotationStep;
+    rotation = fmod(rotation + 360.0f, 360.0f);
+
+    return std::abs(rotationDifference) < 0.01f;
 }
 
 void Model::loadModel(string const& path, bool bSmoothNormals)

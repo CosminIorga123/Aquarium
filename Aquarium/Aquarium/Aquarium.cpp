@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Aquarium", glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Aquarium", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -182,8 +182,6 @@ int main(int argc, char** argv)
 	// configure global opengl state
 	// -----------------------------
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// build and compile shaders
 	// -------------------------
@@ -338,7 +336,8 @@ int main(int argc, char** argv)
     
 	//yellow fish
     fishObjModel = new Model{ currentPath + "\\Models\\Fish06\\Fish06.obj", false };
-    fishObjModel->setPos(glm::vec3(2.0f, 1.0f, 3.3f), glm::vec3(12.0f, 2.0f, 2.0f), 180.0f);
+    //fishObjModel->setPos(glm::vec3(2.0f, 1.0f, 3.3f), glm::vec3(12.0f, 2.0f, 2.0f), 180.0f);
+    fishObjModel->setPosSplice(glm::vec3(2.0f, 1.0f, 3.0f), glm::vec3(10.5f, 1.0f, 4.5f), glm::vec3(15.0f, 3.0f, 2.0f), 0.0f);
 
     fishObjModel2 = new Model{ currentPath + "\\Models\\Fish02\\Fish02.obj", false };
     fishObjModel2->setPos(glm::vec3(20.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
@@ -362,7 +361,7 @@ int main(int argc, char** argv)
     wall->setPos(glm::vec3(1.75f, 0.f, 3.0f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     greek = new Model{ currentPath + "\\Models\\Statue\\model.obj", false };
-    greek->setPos(glm::vec3(3.7f, -0.2f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
+    greek->setPos(glm::vec3(3.7f, 0.f, 2.2f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -414,7 +413,7 @@ int main(int argc, char** argv)
 
         // light movement
         // -----------
-        if (isDay)
+        /*if (isDay)
         {
             static float fRadius = 15.0f;
             lightPos.x = fRadius * std::cos(currentFrame);
@@ -423,7 +422,7 @@ int main(int argc, char** argv)
         else
         {
             lightPos.y = -1000.0f;
-        }
+        }*/
 
         // render
         // ------
@@ -437,7 +436,7 @@ int main(int argc, char** argv)
             float near_plane = 1.0f, far_plane = 30.5f;
             lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
-            lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
+            lightView = glm::lookAt(lightPos, glm::vec3(12.5f, 0.f, 3.0f), glm::vec3(0.0, 1.0, 0.0));
             lightSpaceMatrix = lightProjection * lightView;
 
             // render scene from light's point of view
@@ -501,6 +500,10 @@ int main(int argc, char** argv)
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
     
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         windowShader.use();
         projection = camera->GetProjectionMatrix();
         view = camera->GetViewMatrix();
@@ -572,6 +575,7 @@ int main(int argc, char** argv)
         renderFloor();
 
         renderMenu();
+        glDisable(GL_BLEND);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwSwapBuffers(window);
@@ -624,17 +628,19 @@ void renderScene(Shader& shader)
 
     model = glm::mat4(1.0f);
     if(objectsShouldMove)
-        fishObjModel->moveObject(incrementMoveSpeed, incrementRotationSpeed);
+        fishObjModel->moveObjectSplice(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel->currentPos);
+    //std::cout << fishObjModel->currentPos.x << " " << fishObjModel->currentPos.y << " " << fishObjModel->currentPos.z << std::endl;
     model = glm::scale(model, glm::vec3(0.03f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(fishObjModel->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     fishObjModel->Draw(shader);
 
     model = glm::mat4(1.0f);
     if (objectsShouldMove)
-        fishObjModel2->moveObject(incrementMoveSpeed, incrementRotationSpeed);
+        fishObjModel2->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel2->currentPos);
     model = glm::scale(model, glm::vec3(0.1f));
     model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -668,7 +674,7 @@ void renderScene(Shader& shader)
 
     model = glm::mat4(1.0f);
     if (objectsShouldMove)
-        krab->moveObject(incrementMoveSpeed-0.0037, incrementRotationSpeed);
+        krab->moveObjectLinear(incrementMoveSpeed-0.0037, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), krab->currentPos);
     model = glm::scale(model, glm::vec3(0.006f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1044,7 +1050,6 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
 	{
 		isDay = false;
 		setFaces(faces, cubemapTexture);
-        lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 
     //movement
@@ -1057,7 +1062,37 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
         objectsShouldMove = true;
     }
 
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        lightPos.z -= 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        lightPos.z += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        lightPos.x -= 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        lightPos.x += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        lightPos.y -= 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        lightPos.y += 0.1f;
+    }
+
+    //std::cout << lightPos.x <<" "<< lightPos.y<<" "<< lightPos.z<<"\n";
 }
+
+//GOOD LIGHT POS
+//18 11.8 5.3 lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
+//
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
