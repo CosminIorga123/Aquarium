@@ -127,6 +127,14 @@ irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 TextRenderer* Text;
 Model* fishObjModel;
 Model* fishObjModel2;
+Model* fishObjModel3;
+Model* fishObjModel4;
+//bank of yellow fishes
+Model* fishObjModel5;
+Model* fishObjModel6;
+Model* fishObjModel7;
+Model* fishObjModel8;
+//
 Model* fishMan;
 Model* rock;
 Model* seaObjects;
@@ -340,7 +348,29 @@ int main(int argc, char** argv)
     fishObjModel->setPosSplice(glm::vec3(2.0f, 1.0f, 3.0f), glm::vec3(10.5f, 1.0f, 4.5f), glm::vec3(15.0f, 3.0f, 2.0f), 0.0f);
 
     fishObjModel2 = new Model{ currentPath + "\\Models\\Fish02\\Fish02.obj", false };
-    fishObjModel2->setPos(glm::vec3(20.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
+    fishObjModel2->setPos(glm::vec3(18.0f, 2.0f, 4.0f), glm::vec3(2.0f, 1.0f, 5.3f), 0.0f);
+
+    fishObjModel3 = new Model{ currentPath + "\\Models\\Fish04\\TropicalFish09.obj", false };
+    fishObjModel3->setPos(glm::vec3(18.0f, 3.0f, 3.0f), glm::vec3(3.0f, 3.0f, 3.0f), 0.0f);
+
+    fishObjModel4 = new Model{ currentPath + "\\Models\\Fish03\\TropicalFish10.obj", false };
+    fishObjModel4->setPos(glm::vec3(11.0f, 0.5f, 5.0f), glm::vec3(11.0f, 0.5f, 1.0f), 180.0f);
+
+    //bank
+    fishObjModel5 = new Model{ currentPath + "\\Models\\Fish05\\TropicalFish05.obj", false };
+    fishObjModel5->setPos(glm::vec3(15.0f, 0.5f, 1.0f), glm::vec3(19.0f, 0.5f, 1.0f), 180.0f);
+
+    fishObjModel6 = new Model{ currentPath + "\\Models\\Fish05\\TropicalFish05.obj", false };
+    fishObjModel6->setPos(glm::vec3(15.0f, 0.4f, 1.3f), glm::vec3(19.0f, 0.4f, 1.3f), 180.0f);
+
+    fishObjModel7 = new Model{ currentPath + "\\Models\\Fish05\\TropicalFish05.obj", false };
+    fishObjModel7->setPos(glm::vec3(15.0f, 0.7f, 0.7f), glm::vec3(19.0f, 0.6f, 0.7f), 180.0f);
+
+    fishObjModel8 = new Model{ currentPath + "\\Models\\Fish05\\TropicalFish05.obj", false };
+    fishObjModel8->setPos(glm::vec3(15.0f, 0.6f, 1.5f), glm::vec3(19.0f, 0.5f, 1.5f), 180.0f);
+
+    //
+
 
     fishMan = new Model{ currentPath + "\\Models\\AquaMan\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj", false };
     fishMan->setPos(glm::vec3(19.25f, 0.f, 4.f), glm::vec3(2.0f, 0.f, 3.0f), 0.0f);
@@ -647,6 +677,72 @@ void renderScene(Shader& shader)
     model = glm::rotate(model, glm::radians(fishObjModel2->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
     shader.setMat4("model", model);
     fishObjModel2->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel3->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel3->currentPos);
+    model = glm::scale(model, glm::vec3(0.001f));
+    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel3->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel3->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel4->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel4->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel4->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel4->Draw(shader);
+
+    //bank of yellow fishes
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel5->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel5->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel5->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel5->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel6->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel6->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel6->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel6->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel7->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel7->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel7->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel7->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    if (objectsShouldMove)
+        fishObjModel8->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
+    model = glm::translate(glm::mat4(1.0f), fishObjModel8->currentPos);
+    model = glm::scale(model, glm::vec3(0.0009f));
+    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(fishObjModel8->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    shader.setMat4("model", model);
+    fishObjModel8->Draw(shader);
+    //
 
     model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), fishMan->currentPos);
