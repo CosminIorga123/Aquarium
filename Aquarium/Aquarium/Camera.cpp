@@ -153,9 +153,6 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
     yaw += xOffset;
     pitch += yOffset;
 
-    //std::cout << "yaw = " << yaw << std::endl;
-    //std::cout << "pitch = " << pitch << std::endl;
-
     // Avem grijã sã nu ne dãm peste cap
     if (constrainPitch) {
         if (pitch > 89.0f)

@@ -151,14 +151,6 @@ Model* archSeaweed;
 
 int main(int argc, char** argv)
 {
-	//use if you want exe path
-	/*std::string strFullExeFileName = argv[0];
-	std::string strExePath;
-	const size_t last_slash_idx = strFullExeFileName.rfind('\\');
-	if (std::string::npos != last_slash_idx) {
-		strExePath = strFullExeFileName.substr(0, last_slash_idx);
-	}*/
-
 	// glfw: initialize and configure
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -456,19 +448,6 @@ int main(int argc, char** argv)
             }
         }
 
-        // light movement
-        // -----------
-        /*if (isDay)
-        {
-            static float fRadius = 15.0f;
-            lightPos.x = fRadius * std::cos(currentFrame);
-            lightPos.y = 3.0f;
-        }
-        else
-        {
-            lightPos.y = -1000.0f;
-        }*/
-
         // render
         // ------
         // 1. render depth of scene to texture (from light's perspective)
@@ -675,7 +654,6 @@ void renderScene(Shader& shader)
     if(objectsShouldMove)
         fishObjModel->moveObjectSplice(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel->currentPos);
-    //std::cout << fishObjModel->currentPos.x << " " << fishObjModel->currentPos.y << " " << fishObjModel->currentPos.z << std::endl;
     model = glm::scale(model, glm::vec3(0.03f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -719,7 +697,6 @@ void renderScene(Shader& shader)
         fishObjModel5->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel5->currentPos);
     model = glm::scale(model, glm::vec3(0.0009f));
-    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(fishObjModel5->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
     shader.setMat4("model", model);
@@ -730,7 +707,6 @@ void renderScene(Shader& shader)
         fishObjModel6->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel6->currentPos);
     model = glm::scale(model, glm::vec3(0.0009f));
-    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(fishObjModel6->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
     shader.setMat4("model", model);
@@ -741,7 +717,6 @@ void renderScene(Shader& shader)
         fishObjModel7->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel7->currentPos);
     model = glm::scale(model, glm::vec3(0.0009f));
-    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(fishObjModel7->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
     shader.setMat4("model", model);
@@ -752,12 +727,10 @@ void renderScene(Shader& shader)
         fishObjModel8->moveObjectLinear(incrementMoveSpeed, incrementRotationSpeed);
     model = glm::translate(glm::mat4(1.0f), fishObjModel8->currentPos);
     model = glm::scale(model, glm::vec3(0.0009f));
-    //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(fishObjModel8->rotation), glm::vec3(0.0f, 1.0f, 0.0f));
     shader.setMat4("model", model);
     fishObjModel8->Draw(shader);
-    //
 
     model = glm::mat4(1.0f);
     if (objectsShouldMove)
@@ -783,7 +756,6 @@ void renderScene(Shader& shader)
     model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), fishMan->currentPos);
     model = glm::scale(model, glm::vec3(0.15f));
- // model = glm::rotate(model, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     fishMan->Draw(shader);
@@ -800,7 +772,6 @@ void renderScene(Shader& shader)
     model = glm::translate(glm::mat4(1.0f), seaObjects->currentPos);
     model = glm::scale(model, glm::vec3(0.0065f));
     model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    // model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     seaObjects->Draw(shader);
 
@@ -827,15 +798,12 @@ void renderScene(Shader& shader)
     model = glm::translate(glm::mat4(1.0f), wall->currentPos);
     model = glm::scale(model, glm::vec3(0.002f));
     model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     wall->Draw(shader);
 
     model = glm::mat4(1.0f);
     model = glm::translate(glm::mat4(1.0f), greek->currentPos);
     model = glm::scale(model, glm::vec3(0.07f));
-    //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shader.setMat4("model", model);
     greek->Draw(shader);
 
@@ -843,7 +811,6 @@ void renderScene(Shader& shader)
     model = glm::translate(glm::mat4(1.0f), seaweed->currentPos);
     model = glm::scale(model, glm::vec3(0.08f));
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     seaweed->Draw(shader);
 
@@ -851,7 +818,6 @@ void renderScene(Shader& shader)
     model = glm::translate(glm::mat4(1.0f), archSeaweed->currentPos);
     model = glm::scale(model, glm::vec3(0.0022f));
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     archSeaweed->Draw(shader);
 
@@ -987,8 +953,6 @@ void renderRectangular() {
 		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		/*glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
 		glBindVertexArray(0);
 	}
 	//draw aquarium
@@ -1019,8 +983,6 @@ void renderSquare() {
         glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        /*glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
         glBindVertexArray(0);
     }
     //draw aquarium
@@ -1050,8 +1012,6 @@ void renderCeiling() {
         glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        /*glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
         glBindVertexArray(0);
     }
     //draw aquarium
@@ -1235,13 +1195,7 @@ void processInput(GLFWwindow* window, std::vector<std::string>& faces, unsigned 
     {
         lightPos.y += 0.1f;
     }
-
-    //std::cout << lightPos.x <<" "<< lightPos.y<<" "<< lightPos.z<<"\n";
 }
-
-//GOOD LIGHT POS
-//18 11.8 5.3 lightView = glm::lookAt(lightPos, glm::vec3(10.0f, 0.0f, 4.0f), glm::vec3(0.0, 1.0, 0.0));
-//
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
