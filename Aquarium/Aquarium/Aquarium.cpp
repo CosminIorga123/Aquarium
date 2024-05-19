@@ -147,6 +147,7 @@ Model* greek;
 Camera* camera;
 std::vector<glm::vec3> bubbles;
 Model* seaweed;
+Model* archSeaweed;
 
 int main(int argc, char** argv)
 {
@@ -403,6 +404,9 @@ int main(int argc, char** argv)
 
     seaweed = new Model{ currentPath + "\\Models\\Seaweed\\model.obj", false };
     seaweed->setPos(glm::vec3(11.5f, 0.f, 1.22f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
+
+    archSeaweed = new Model{ currentPath + "\\Models\\ArchSeaweed\\model.obj", false };
+    archSeaweed->setPos(glm::vec3(0.9f, 0.f, 2.9f), glm::vec3(0.0f, 0.f, 0.0f), 0.0f);
 
     // Play background sound
     SoundEngine->play2D((currentPath + "\\Sounds\\" + "background.mp3").c_str(), true);
@@ -842,6 +846,14 @@ void renderScene(Shader& shader)
     //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader.setMat4("model", model);
     seaweed->Draw(shader);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(glm::mat4(1.0f), archSeaweed->currentPos);
+    model = glm::scale(model, glm::vec3(0.0022f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    shader.setMat4("model", model);
+    archSeaweed->Draw(shader);
 
 }
 
